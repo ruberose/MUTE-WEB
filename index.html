@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 8 테마 선택 화면 추가)</title>
-  <meta name="description" content="MUTE-WEB의 Step 8 페이지입니다. 첫 접속 시 3가지 테마(자연, 판타지, 공포) 중 하나를 선택하는 화면을 노출하고, 선택에 따라 감성적인 백색소음 믹서가 다이내믹하게 열립니다.">
+  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 9 테마 동적 업데이트)</title>
+  <meta name="description" content="MUTE-WEB의 Step 9 페이지입니다. 첫 접속 시 3가지 테마(자연, 판타지, 공포) 중 하나를 선택하는 화면을 노출하고, 선택에 따라 감성적인 백색소음 믹서가 다이내믹하게 열립니다.">
   
   <!-- CSS 스타일시트 상대경로 참조 -->
   <link rel="stylesheet" href="css/style.css">
@@ -55,7 +55,7 @@
          ========================================================================== -->
     <main class="main-arena" id="main-arena">
       
-      <!-- [Step 8 추가] 좌측 상단 테마 선택 화면 복귀 단추 (👈) -->
+      <!-- 좌측 상단 테마 선택 화면 복귀 단추 (👈) -->
       <button type="button" class="btn-theme-back" id="btn-theme-back">👈 테마 선택으로</button>
 
       <!-- 우측 상단 설정 서랍 개폐 단추 (⚙️) -->
@@ -86,6 +86,8 @@
       <section class="visual-space" id="visual-space-zone">
         <div style="text-align: center;">
           <span style="font-size: 32px; display: block; margin-bottom: 10px;" id="theme-visual-emoji">🌊</span>
+          <!-- [Step 9] 메인 멍 타겟 공간의 배경명 텍스트 영역 추가 (요구사항 1-1) -->
+          <h2 id="current-bg-name" style="margin: 0 0 10px 0; color: #2c3e50; font-size: 20px;">모닥불</h2>
           <span id="theme-visual-text">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
         </div>
       </section>
@@ -123,10 +125,10 @@
         <button type="button" class="btn-drawer-close" id="btn-drawer-close">✕ 닫기</button>
       </div>
 
-      <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (Step 8: 자바스크립트에서 동적 생성) -->
+      <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (Step 8/9: 자바스크립트에서 동적 생성) -->
       <section class="sounds-container" id="sounds-section">
         <ul class="sounds-list" id="sounds-list">
-          <!-- [Step 8] js/script.js 에서 선택한 테마에 맞는 사운드 아이템들을 동적으로 삽입합니다. -->
+          <!-- [Step 8/9] js/script.js 에서 선택한 테마에 맞는 사운드 아이템들을 동적으로 삽입합니다. -->
         </ul>
       </section>
 
