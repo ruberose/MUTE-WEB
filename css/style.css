@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MUSE-WEB CSS (Step 1 - Basic Layout)
+   MUTE-WEB CSS (Step 2 - Basic Layout & Slider Alignment)
    ========================================================================== */
 
 /* 브라우저 기본 폰트 및 배경색 설정 */
@@ -13,7 +13,7 @@ body {
 
 /* 전체 컨테이너 정렬 */
 .app-container {
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto;
   background-color: #ffffff;
   padding: 30px;
@@ -79,34 +79,53 @@ button {
   background-color: #c0392b;
 }
 
-/* 리스트 및 텍스트 라벨 컨테이너 정렬 */
+/* 리스트 및 슬라이더 영역 감싸는 컨테이너 */
+.sounds-container {
+  margin-top: 20px;
+}
+
+/* 리스트 기본 여백 초기화 */
 .sounds-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-/* 각 사운드 행 스타일 */
-.sound-item {
+/* [Step 2] 개별 오디오 슬라이더와 라벨을 감싸는 아이템 단위 컨테이너 (요구사항 1-2, 3) */
+.audio-control-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 15px 20px;
   border-bottom: 1px solid #ecf0f1;
   font-size: 16px;
+  gap: 15px; /* 각 요소별 간격 확보 */
 }
 
-.sound-item:last-child {
+.audio-control-item:last-child {
   border-bottom: none;
 }
 
-/* 사운드 이름 강도 */
-.sound-name {
+/* 사운드 이름 및 이모지 라벨 영역 고정 너비 지정 */
+.sound-label {
+  flex: 1; /* 이름 영역이 공간을 유연하게 차지함 */
+  min-width: 140px;
   font-weight: 500;
   color: #34495e;
 }
 
-/* 작동 상태 텍스트 라벨 기본 스타일 */
+/* [Step 2] 볼륨 조절 슬라이더 기본 가로 너비 및 레이아웃 정렬 */
+.volume-slider {
+  flex: 2; /* 슬라이더가 더 넓은 면적을 차지하도록 유도 */
+  min-width: 150px;
+  height: 6px;
+  cursor: pointer;
+}
+
+/* 작동 상태 표시 텍스트 배지 영역 고정 너비 및 중앙 정렬 */
 .sound-status {
+  min-width: 80px;
+  text-align: center;
   font-weight: bold;
   padding: 4px 10px;
   border-radius: 4px;

@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 1 기능검증)</title>
-  <meta name="description" content="MUTE-WEB의 Step 1 기능 검증 페이지입니다. 빗소리, 장작 소리, 시냇물 소리를 동시에 무한 재생 및 정지 제어할 수 있는 초경량 웹 오디오 환경입니다.">
+  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 2 볼륨제어)</title>
+  <meta name="description" content="MUTE-WEB의 Step 2 페이지입니다. 개별 오디오 슬라이더를 도입하여 빗소리, 장작 소리, 시냇물 소리의 볼륨 강도를 유저가 실시간으로 조절할 수 있습니다.">
   
   <!-- CSS 스타일시트 상대경로 참조 -->
   <link rel="stylesheet" href="css/style.css">
@@ -17,8 +17,8 @@
     
     <!-- 타이틀 영역 -->
     <header>
-      <h1 id="app-title">MUTE-WEB ASMR (Step 1)</h1>
-      <p class="description" id="app-description">기능 작동 여부만 검증하는 단순 테스트용 웹사이트입니다.</p>
+      <h1 id="app-title">MUTE-WEB ASMR (Step 2)</h1>
+      <p class="description" id="app-description">개별 오디오의 볼륨 조절 슬라이더 기능이 추가된 검증 페이지입니다.</p>
     </header>
 
     <!-- 컨트롤러 영역: 전체 재생 및 전체 정지 버튼 -->
@@ -27,26 +27,42 @@
       <button type="button" id="btn-stop-all">전체 정지</button>
     </section>
 
-    <!-- 오디오 목록 및 각 오디오의 현재 상태 레이아웃 -->
+    <!-- 오디오 목록 및 볼륨 제어 슬라이더 레이아웃 (요구사항 1-1, 1-2) -->
     <section class="sounds-container" id="sounds-section">
-      <h2 style="font-size: 18px; margin-bottom: 15px; color: #34495e;">음원 상태 현황</h2>
+      <h2 style="font-size: 18px; margin-bottom: 15px; color: #34495e;">음원 및 볼륨 개별 제어</h2>
       
       <ul class="sounds-list" id="sounds-list">
-        <!-- 빗소리 사운드 행 -->
-        <li class="sound-item" id="item-rain">
-          <span class="sound-name">🌧️ 차분한 빗소리</span>
+        
+        <!-- 빗소리 제어 컴포넌트 -->
+        <li class="audio-control-item" id="item-rain">
+          <!-- 오디오 이름 및 이모지 라벨 -->
+          <span class="sound-label" id="label-rain">🌧️ 차분한 빗소리</span>
+          <!-- 개별 볼륨 슬라이더 (input type="range", 범위 0~1, 기본값 0.5) -->
+          <input type="range" class="volume-slider" id="volume-rain" min="0" max="1" step="0.01" value="0.5" aria-label="빗소리 볼륨 조절">
+          <!-- 오디오 실시간 작동 상태 표시 -->
           <span class="sound-status" id="status-rain">준비 대기 중</span>
         </li>
-        <!-- 장작 소리 사운드 행 -->
-        <li class="sound-item" id="item-campfire">
-          <span class="sound-name">🔥 따뜻한 장작 소리</span>
+        
+        <!-- 장작 소리 제어 컴포넌트 -->
+        <li class="audio-control-item" id="item-campfire">
+          <!-- 오디오 이름 및 이모지 라벨 -->
+          <span class="sound-label" id="label-campfire">🔥 따뜻한 장작 소리</span>
+          <!-- 개별 볼륨 슬라이더 (input type="range", 범위 0~1, 기본값 0.5) -->
+          <input type="range" class="volume-slider" id="volume-campfire" min="0" max="1" step="0.01" value="0.5" aria-label="장작 소리 볼륨 조절">
+          <!-- 오디오 실시간 작동 상태 표시 -->
           <span class="sound-status" id="status-campfire">준비 대기 중</span>
         </li>
-        <!-- 시냇물 소리 사운드 행 -->
-        <li class="sound-item" id="item-stream">
-          <span class="sound-name">🏞️ 맑은 시냇물 소리</span>
+        
+        <!-- 시냇물 소리 제어 컴포넌트 -->
+        <li class="audio-control-item" id="item-stream">
+          <!-- 오디오 이름 및 이모지 라벨 -->
+          <span class="sound-label" id="label-stream">🏞️ 맑은 시냇물 소리</span>
+          <!-- 개별 볼륨 슬라이더 (input type="range", 범위 0~1, 기본값 0.5) -->
+          <input type="range" class="volume-slider" id="volume-stream" min="0" max="1" step="0.01" value="0.5" aria-label="시냇물 소리 볼륨 조절">
+          <!-- 오디오 실시간 작동 상태 표시 -->
           <span class="sound-status" id="status-stream">준비 대기 중</span>
         </li>
+        
       </ul>
     </section>
 
