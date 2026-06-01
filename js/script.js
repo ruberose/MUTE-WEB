@@ -1,26 +1,29 @@
 /**
  * ==========================================================================
- * MUTE-WEB ASMR White Noise Web Application (Step 5 - Custom Input Timer)
+ * MUTE-WEB ASMR White Noise Web Application (Step 5-2 - Master Volume Integration)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
- * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 5' 비즈니스 로직을 담당합니다.
- * 기존의 고정 시간 버튼 방식 타이머를 개선하여 사용자가 직접 원하는 '분(Minute)' 단위를 
- * 입력하여 예약 정지할 수 있는 '사용자 직접 입력 방식 타이머'를 구현했습니다.
+ * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 '마스터 볼륨 슬라이더 연동' 로직을 담당합니다.
+ * 기존의 사용자 직접 지정 타이머, 10초 선형 페이드아웃, 개별 ON/OFF 토글 스위치 기능을 보존하면서,
+ * 상단에 전체 소리의 크기를 한 번에 조절할 수 있는 마스터 볼륨(Master Volume) 제어기를 연동했습니다.
+ * 
+ * [수학적 볼륨 감쇠 공식]
+ * 각 사운드의 실제 최종 오디오 출력 음량은 아래와 같이 계산됩니다:
+ * 최종 출력 음량 = [개별 지정 볼륨] × [마스터 볼륨] × [타이머 페이드아웃 감쇠 비율 (동작 시)]
  * 
  * 주요 기능:
  * 1. 무료 라이센스 및 CORS 허용 고안정성 GitHub Raw MP3 음원 3개 관리
  * 2. 각 오디오 객체 초기화, 무한 반복(loop) 및 초기 볼륨(0.5) 설정
- * 3. 개별 볼륨 슬라이더 조절 시 실시간 오디오 볼륨 크기 동기화
- * 4. 통합 ON/OFF 스위치: 유저가 켜고 끄는 직관적인 단일 버튼 제어 (기존 슬라이더 볼륨 값 완전 유지)
- * 5. [New] 사용자 직접 입력 타이머: 유효성 검사(빈 값, 0 이하 수 제한)를 적용한 자유 시간 타이머 구동
- * 6. [New] 타이머 구동 중 안전 잠금: 카운트다운 도중 입력 필드와 시작 버튼을 비활성화(disabled)하여 오작동 차단
- * 7. [New] 타이머 취소 기능: 소리는 유지한 채 카운트다운을 즉시 멈추고 제어창을 다시 활성화
- * 8. 페이드아웃(Fade-out) 연동: 커스텀 타이머 종료 10초 전부터 전체 사운드가 선형적으로 감쇄되어 자동 정지
+ * 3. 개별 볼륨 슬라이더 조절 시 실시간 오디오 볼륨 크기 동기화 (마스터 볼륨 공식 대입)
+ * 4. 통합 ON/OFF 스위치: 개별 재생/정지 제어
+ * 5. 사용자 직접 입력 타이머: 유효성 검사 및 카운트다운 타이머 구동
+ * 6. [New] 마스터 볼륨 슬라이더: 유저가 믹싱해 둔 개별 볼륨 비율을 훼손하지 않고 전체 볼륨을 실시간 비례 조절
+ * 7. [New] 정밀 페이드아웃: 취침 예약 타이머의 10초 감쇄 동작이 마스터 볼륨이 곱해진 최종 볼륨선에서부터 선형적으로 0까지 감쇄되도록 제어 정밀도 개선
  */
 
 // ==========================================================================
-// 1. 전역 상태 관리
+// 1. 전역 상태 관리 (마스터 볼륨 필드 추가)
 // ==========================================================================
 
 /**
@@ -30,7 +33,7 @@
  * @property {string} url - 오디오 스트리밍용 GitHub Raw MP3 주소
  * @property {HTMLAudioElement|null} audioInstance - 실제 재생을 담당할 오디오 객체
  * @property {string} status - 현재 재생 상태 ('준비 대기 중', '준비 완료', '재생 중', '정지됨')
- * @property {number} volume - 개별 볼륨 크기 (0.0 ~ 1.0, 기본값: 0.5)
+ * @property {number} volume - 개별 지정 볼륨 크기 (0.0 ~ 1.0, 기본값: 0.5)
  * @property {boolean} isPlaying - 개별 ON/OFF 상태 (기본값: false)
  */
 
@@ -65,7 +68,8 @@ const asmrSounds = [
   }
 ];
 
-// 타이머 관련 제어 변수들
+// 마스터 볼륨 및 타이머 제어용 전역 변수 (요구사항 2-1)
+let masterVolume = 1.0; // 마스터 볼륨 기본값 (0.0 ~ 1.0, 기본값: 1.0)
 let timerSecondsRemaining = 0; // 남은 전체 초
 let countdownIntervalId = null; // 카운트다운 타이머 인터벌 ID
 let isFadingOut = false; // 현재 페이드아웃 감쇄 동작이 가동 중인지 여부
@@ -85,8 +89,8 @@ function initializeAudioSources() {
     // 2. 백색소음을 위한 무한 반복 재생 활성화
     audio.loop = true;
     
-    // 3. 현재 저장된 볼륨 기본값(0.5)으로 오디오 볼륨 설정
-    audio.volume = sound.volume;
+    // 3. 현재 저장된 [개별 볼륨 × 마스터 볼륨] 최종 볼륨으로 오디오 볼륨 설정 (요구사항 2-2)
+    audio.volume = getCalculatedVolume(sound);
 
     // 4. 오디오 인스턴스 전역 객체에 매핑
     sound.audioInstance = audio;
@@ -112,7 +116,45 @@ function initializeAudioSources() {
 }
 
 // ==========================================================================
-// 3. UI 렌더링 함수
+// 3. 볼륨 연산 엔진 함수 (요구사항 2-2, 2-5)
+// ==========================================================================
+
+/**
+ * 수학적 볼륨 공식을 기반으로 개별 사운드의 실제 출력 오디오 볼륨을 계산합니다.
+ * 계산식: [개별 지정 볼륨] × [마스터 볼륨] × [타이머 페이드아웃 비율 (동작 시)]
+ * 
+ * @param {AsmrSound} sound - 계산 대상 사운드 상태 객체
+ * @returns {number} 실제 HTML5 Audio 객체에 주입할 볼륨 값 (0.0 ~ 1.0)
+ */
+function getCalculatedVolume(sound) {
+  let fadeRatio = 1.0;
+
+  // 타이머 종료 마지막 10초 동안 선형 페이드아웃 적용
+  if (isFadingOut) {
+    fadeRatio = Math.max(0, Math.min(1, timerSecondsRemaining / 10));
+  }
+
+  // 최종 수학적 계산: 개별 슬라이더 값 * 마스터 볼륨 값 * 페이드아웃 비율
+  const targetVolume = sound.volume * masterVolume * fadeRatio;
+
+  // HTML5 Audio는 0.0 ~ 1.0 사이 값만 허용하므로 안전 장치 랩핑
+  return Math.max(0, Math.min(1, targetVolume));
+}
+
+/**
+ * 전역 상태에 맞춰 가동 중인 모든 오디오의 실제 출력 볼륨을 강제 동기화합니다.
+ */
+function syncAllAudioVolumes() {
+  asmrSounds.forEach((sound) => {
+    const audio = sound.audioInstance;
+    if (audio) {
+      audio.volume = getCalculatedVolume(sound);
+    }
+  });
+}
+
+// ==========================================================================
+// 4. UI 렌더링 함수
 // ==========================================================================
 
 /**
@@ -132,7 +174,6 @@ function renderStatus() {
     if (switchBtn) {
       switchBtn.textContent = sound.isPlaying ? 'ON' : 'OFF';
       
-      // ON 상태일 때 시각적인 활성화 클래스 분기 처리
       if (sound.isPlaying) {
         switchBtn.classList.add('active-on');
       } else {
@@ -143,7 +184,7 @@ function renderStatus() {
 }
 
 // ==========================================================================
-// 4. 오디오 제어 핵심 함수
+// 5. 오디오 제어 핵심 함수
 // ==========================================================================
 
 /**
@@ -151,7 +192,6 @@ function renderStatus() {
  * 모든 음원의 개별 상태를 ON(isPlaying = true)으로 설정하고 재생을 실행합니다.
  */
 function playAllSounds() {
-  // 타이머 페이드아웃 상태 진행 중이었다면 볼륨 초기 복원 가동
   if (isFadingOut) {
     resetFadeOutVolume();
   }
@@ -161,8 +201,8 @@ function playAllSounds() {
     
     if (!audio) return;
 
-    // 슬라이더에 세팅되어 있는 기존 볼륨 크기 그대로 소리 세팅
-    audio.volume = sound.volume;
+    // 재생 전 최종 수학적 공식 볼륨 동기화 (개별 볼륨 * 마스터 볼륨)
+    audio.volume = getCalculatedVolume(sound);
 
     audio.play()
       .then(() => {
@@ -199,7 +239,7 @@ function stopAllSounds() {
     sound.status = '정지됨';
   });
   
-  // 페이드아웃이 동작하여 볼륨이 깎여 있던 상황을 대비해 볼륨을 슬라이더 원래 상태로 복원
+  // 페이드아웃 상태 및 볼륨 초기 복원 가동
   resetFadeOutVolume();
   renderStatus();
 }
@@ -216,7 +256,6 @@ function toggleSoundSwitch(soundId) {
 
   const audio = sound.audioInstance;
 
-  // 타이머가 동작하여 감쇄가 이루어지던 중 토글 스위치 변경 시 원격 볼륨 복구
   if (isFadingOut) {
     resetFadeOutVolume();
   }
@@ -227,8 +266,8 @@ function toggleSoundSwitch(soundId) {
     sound.isPlaying = false;
     sound.status = '정지됨';
   } else {
-    // OFF -> ON (재생 처리, 슬라이더 볼륨 크기 완전 보존)
-    audio.volume = sound.volume; 
+    // OFF -> ON (재생 처리, 슬라이더 볼륨에 마스터 볼륨 배율 곱하여 대입)
+    audio.volume = getCalculatedVolume(sound); 
     
     audio.play()
       .then(() => {
@@ -248,6 +287,7 @@ function toggleSoundSwitch(soundId) {
 
 /**
  * 특정 오디오 소스의 슬라이더 볼륨 크기를 실시간 동기화합니다.
+ * 개별 슬라이더를 조절할 때도 항상 마스터 볼륨 값이 곱해진 최종 연산값이 적용됩니다. (요구사항 2-4)
  * 
  * @param {string} soundId - 대상 사운드 ID
  * @param {number} newVolume - 변경할 볼륨 값 (0.0 ~ 1.0)
@@ -256,31 +296,44 @@ function updateVolume(soundId, newVolume) {
   const sound = asmrSounds.find(s => s.id === soundId);
   
   if (sound) {
+    // 1. 개별 기본 볼륨 상태 업데이트
     sound.volume = newVolume;
     
-    // 타이머 페이드아웃 감쇄 진행 중이 아닐 때만 실제 오디오 객체 볼륨을 동기화
-    if (sound.audioInstance && !isFadingOut) {
-      sound.audioInstance.volume = newVolume;
+    // 2. 오디오 인프라의 실제 출력 볼륨 동기화 (공식 적용)
+    if (sound.audioInstance) {
+      sound.audioInstance.volume = getCalculatedVolume(sound);
     }
   }
 }
 
+/**
+ * 유저가 마스터 볼륨을 제어할 때 동작하는 실시간 조절 함수입니다. (요구사항 2-3)
+ * 
+ * @param {number} newMasterVolume - 변경할 마스터 볼륨 값 (0.0 ~ 1.0)
+ */
+function updateMasterVolume(newMasterVolume) {
+  // 1. 전역 마스터 볼륨 변수 값 저장
+  masterVolume = newMasterVolume;
+
+  // 2. 공식에 맞추어 모든 작동 중인 오디오 볼륨을 일시에 동기화 수행
+  syncAllAudioVolumes();
+
+  console.log(`[마스터 볼륨] 전체 오디오 크기가 ${Math.round(newMasterVolume * 100)}% 배율로 통합 조정되었습니다.`);
+}
+
 // ==========================================================================
-// 5. 직접 입력 방식 오디오 타이머 로직 (Step 5 변경 사항)
+// 6. 직접 입력 방식 오디오 타이머 로직
 // ==========================================================================
 
 /**
- * 사용자가 입력한 사용자 지정 분 단위를 받아 타이머를 시작하는 함수입니다. (요구사항 2)
- * 빈 값이거나 0 이하의 비정상적인 정수 값일 경우의 예외 처리가 가동됩니다.
+ * 사용자가 입력한 사용자 지정 분 단위를 받아 타이머를 시작하는 함수입니다.
  */
 function handleStartTimer() {
   const timerInput = document.getElementById('timer-input');
   if (!timerInput) return;
 
-  // 1. 입력된 값 읽기 및 공백 제거
   const valueString = timerInput.value.trim();
 
-  // 2. 예외 처리: 빈 값이거나 숫자가 아닌 경우 거름 (요구사항 2-1)
   if (valueString === '') {
     alert('시간(분)을 입력해 주세요!');
     return;
@@ -288,54 +341,45 @@ function handleStartTimer() {
 
   const minutes = parseInt(valueString, 10);
 
-  // 3. 예외 처리: 0 이하의 값 또는 정상 숫자가 아닌 경우 가동 제한 (요구사항 2-1)
   if (isNaN(minutes) || minutes <= 0) {
     alert('1분 이상의 올바른 숫자를 입력해 주세요!');
     timerInput.value = '';
     return;
   }
 
-  // 4. 타이머 기능 가동
   startAudioTimer(minutes);
 }
 
 /**
- * 카운트다운 타이머 인터벌을 등록하고 UI 통제를 적용합니다. (요구사항 2)
+ * 카운트다운 타이머 인터벌을 등록하고 UI 통제를 적용합니다.
  * 
  * @param {number} minutes - 구동할 분 단위 시간
  */
 function startAudioTimer(minutes) {
-  // 1. 기존 가동되던 인터벌 청소 및 볼륨 복구
   clearAllIntervals();
   resetFadeOutVolume();
 
-  // 2. 입력 제어창 및 구동 버튼 실시간 비활성화 (요구사항 2-2)
   setTimerControlsDisabled(true);
 
-  // 3. 남은 시간 초 단위 환산 및 저장
   timerSecondsRemaining = minutes * 60;
   updateTimerDisplay(formatTime(timerSecondsRemaining));
   console.log(`[타이머 시작] 사용자가 ${minutes}분 취침 예약을 설정했습니다.`);
 
-  // 4. 1초마다 반응하는 카운트다운 가동
   countdownIntervalId = setInterval(() => {
     timerSecondsRemaining--;
 
-    // A. 남은 시간 실시간 출력 갱신
     updateTimerDisplay(formatTime(timerSecondsRemaining));
 
-    // B. 마지막 10초 선형 감쇄 페이드아웃 효과 (요구사항 2-4)
+    // 마지막 10초 선형 감쇄 페이드아웃 효과 (요구사항 2-5)
     if (timerSecondsRemaining <= 10 && timerSecondsRemaining > 0) {
-      applyFadeOutEffect(timerSecondsRemaining);
+      applyFadeOutEffect();
     }
 
-    // C. 카운트다운 시간이 완료된 경우
     if (timerSecondsRemaining <= 0) {
       console.log('[타이머 종료] 예약 시간이 완료되어 백색소음을 전체 정지합니다.');
       clearAllIntervals();
-      stopAllSounds(); // 전체 오디오 일시정지
+      stopAllSounds();
       
-      // 제어 요소 활성화 복원 및 시간 완료 출력
       setTimerControlsDisabled(false);
       updateTimerDisplay('완료');
     }
@@ -343,21 +387,14 @@ function startAudioTimer(minutes) {
 }
 
 /**
- * [타이머 취소] 버튼 클릭 시 동작하는 처리기입니다. (요구사항 2-3)
- * 소리는 전혀 정지시키지 않은 채, 타이머 인터벌만 즉시 멈추고 
- * 깎여있던 페이드아웃 볼륨을 원상태로 되돌린 뒤 입력창을 초기화 및 활성화합니다.
+ * [타이머 취소] 버튼 클릭 시 동작하는 처리기입니다.
  */
 function handleCancelTimer() {
-  // 1. 카운트다운 인터벌 소거 (음원 재생은 그대로 유지)
   clearAllIntervals();
-
-  // 2. 페이드아웃에 의해 작아진 볼륨을 원래 지정 볼륨 상태로 즉각 복구 (요구사항 2-3)
   resetFadeOutVolume();
 
-  // 3. 입력 필드 및 시작 단추 활성화 원상복귀 (요구사항 2-3)
   setTimerControlsDisabled(false);
 
-  // 4. 입력창 값 및 잔여 시간 표시 라벨 초기화 (요구사항 2-3)
   const timerInput = document.getElementById('timer-input');
   if (timerInput) {
     timerInput.value = '';
@@ -368,9 +405,7 @@ function handleCancelTimer() {
 }
 
 /**
- * 타이머 조작 입력 요소들의 비활성화/활성화 상태를 제어하는 함수입니다. (요구사항 2-2)
- * 
- * @param {boolean} disabled - 비활성화 적용 여부 (true: 잠금, false: 해제)
+ * 타이머 조작 입력 요소들의 비활성화/활성화 상태를 제어하는 함수입니다.
  */
 function setTimerControlsDisabled(disabled) {
   const timerInput = document.getElementById('timer-input');
@@ -386,23 +421,11 @@ function setTimerControlsDisabled(disabled) {
 
 /**
  * 타이머 종료 전 마지막 10초 동안 선형적으로 볼륨을 점차 낮추는 페이드아웃 감쇠 함수입니다.
- * 
- * @param {number} secondsLeft - 남은 초 단위 시간 (1~10)
+ * 마스터 볼륨과 개별 볼륨이 적용된 최종 실제 출력값 기준으로 부드럽게 0으로 수렴합니다. (요구사항 2-5)
  */
-function applyFadeOutEffect(secondsLeft) {
+function applyFadeOutEffect() {
   isFadingOut = true;
-
-  asmrSounds.forEach((sound) => {
-    const audio = sound.audioInstance;
-    if (audio && sound.isPlaying) {
-      const fadeRatio = secondsLeft / 10;
-      const targetVolume = sound.volume * fadeRatio;
-      
-      audio.volume = Math.max(0, Math.min(sound.volume, targetVolume));
-    }
-  });
-
-  console.log(`[페이드아웃] 볼륨 감쇄 진행 중... 남은 시간: ${secondsLeft}초`);
+  syncAllAudioVolumes(); // getCalculatedVolume 연산이 내부에서 자동으로 감쇄 비율을 적용함
 }
 
 /**
@@ -411,12 +434,7 @@ function applyFadeOutEffect(secondsLeft) {
  */
 function resetFadeOutVolume() {
   isFadingOut = false;
-  asmrSounds.forEach((sound) => {
-    const audio = sound.audioInstance;
-    if (audio) {
-      audio.volume = sound.volume; // 원래 볼륨으로 복원
-    }
-  });
+  syncAllAudioVolumes(); // getCalculatedVolume을 통해 [개별 볼륨 * 마스터 볼륨] 상태로 자동 롤백
 }
 
 /**
@@ -431,9 +449,6 @@ function clearAllIntervals() {
 
 /**
  * 초 단위 숫자를 "MM:SS" 형태의 예쁜 분:초 텍스트 포맷으로 바꾸어줍니다.
- * 
- * @param {number} totalSeconds - 변환할 초 단위 시간
- * @returns {string} 포맷팅된 시간 문자열
  */
 function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60);
@@ -447,8 +462,6 @@ function formatTime(totalSeconds) {
 
 /**
  * 화면 하단에 있는 타이머 텍스트 디스플레이 영역의 텍스트를 안전하게 변경합니다.
- * 
- * @param {string} text - 출력할 텍스트
  */
 function updateTimerDisplay(text) {
   const displayElement = document.getElementById('timer-display');
@@ -458,7 +471,7 @@ function updateTimerDisplay(text) {
 }
 
 // ==========================================================================
-// 6. 이벤트 바인딩 및 어플리케이션 진입점
+// 7. 이벤트 바인딩 및 어플리케이션 진입점
 // ==========================================================================
 
 /**
@@ -477,7 +490,16 @@ function setupEventListeners() {
     stopAllButton.addEventListener('click', stopAllSounds);
   }
 
-  // 2. 각 사운드별 개별 엘리먼트(볼륨 슬라이더, ON/OFF 스위치) 이벤트 등록
+  // 2. 마스터 볼륨 슬라이더 조절 이벤트 감지 등록 (요구사항 1-1, 2-3)
+  const masterVolumeSlider = document.getElementById('master-volume');
+  if (masterVolumeSlider) {
+    masterVolumeSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      updateMasterVolume(val);
+    });
+  }
+
+  // 3. 각 사운드별 개별 엘리먼트(볼륨 슬라이더, ON/OFF 스위치) 이벤트 등록
   asmrSounds.forEach((sound) => {
     // A. 볼륨 조절 슬라이더
     const sliderElement = document.getElementById(`volume-${sound.id}`);
@@ -497,7 +519,7 @@ function setupEventListeners() {
     }
   });
 
-  // 3. 직접 입력 방식 타이머 제어용 버튼 이벤트 등록 (요구사항 1-1, 2)
+  // 4. 직접 입력 방식 타이머 제어용 버튼 이벤트 등록
   const timerStartBtn = document.getElementById('btn-timer-start');
   const timerCancelBtn = document.getElementById('btn-timer-cancel');
 

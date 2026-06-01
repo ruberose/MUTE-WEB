@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 5 직접입력 타이머)</title>
-  <meta name="description" content="MUTE-WEB의 Step 5 페이지입니다. 유저가 원하는 시간을 직접 분 단위로 지정할 수 있는 수치 입력형 타이머와 10초 페이드아웃 기능이 완벽히 조화되어 있습니다.">
+  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 5-2 마스터볼륨)</title>
+  <meta name="description" content="MUTE-WEB의 마스터 볼륨 페이지입니다. 개별 오디오 지정 비율을 유지하면서 전체 음량을 실시간 조절하는 수학적 볼륨 공식을 기반으로 동작합니다.">
   
   <!-- CSS 스타일시트 상대경로 참조 -->
   <link rel="stylesheet" href="css/style.css">
@@ -17,14 +17,23 @@
     
     <!-- 타이틀 영역 -->
     <header>
-      <h1 id="app-title">MUTE-WEB ASMR (Step 5)</h1>
-      <p class="description" id="app-description">사용자 직접 지정 방식 타이머 및 10초 선형 감쇠 기능이 추가된 검증 페이지입니다.</p>
+      <h1 id="app-title">MUTE-WEB ASMR (Step 5-2)</h1>
+      <p class="description" id="app-description">전체 음량을 한 번에 제어하는 마스터 볼륨(Master Volume) 제어 기능이 추가된 검증 페이지입니다.</p>
     </header>
 
-    <!-- 컨트롤러 영역: 전체 재생 및 전체 정지 버튼 -->
-    <section class="controls-container" id="player-controls">
-      <button type="button" id="btn-play-all">전체 재생</button>
-      <button type="button" id="btn-stop-all">전체 정지</button>
+    <!-- 상단 제어 및 마스터 볼륨 영역 (요구사항 1) -->
+    <section class="top-controls-wrapper" id="top-controls">
+      <!-- 전체 재생 및 전체 정지 버튼 -->
+      <div class="controls-container" id="player-controls">
+        <button type="button" id="btn-play-all">전체 재생</button>
+        <button type="button" id="btn-stop-all">전체 정지</button>
+      </div>
+
+      <!-- [New] 전체 음량을 조절하는 마스터 볼륨 슬라이더 구성 (요구사항 1) -->
+      <div class="master-volume-container" id="master-volume-box">
+        <label for="master-volume" class="master-volume-label" id="master-volume-label">🎚️ 마스터 볼륨</label>
+        <input type="range" class="master-volume-slider" id="master-volume" min="0" max="1" step="0.01" value="1" aria-label="전체 마스터 볼륨 조절">
+      </div>
     </section>
 
     <!-- 오디오 목록 및 개별 제어판 레이아웃 -->
@@ -72,23 +81,23 @@
       </ul>
     </section>
 
-    <!-- [Step 5] 오디오 페이드아웃 직접 지정 타이머 제어판 (요구사항 1) -->
+    <!-- 오디오 페이드아웃 직접 지정 타이머 제어판 -->
     <section class="timer-container" id="timer-section">
       <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머 (직접 지정)</h3>
       
       <!-- 수치 입력창, 시작 및 취소 단추 수평 배치 영역 -->
       <div class="timer-controls-row" id="timer-inputs-container">
-        <!-- 분 단위 정수 입력창 (요구사항 1-2) -->
+        <!-- 분 단위 정수 입력창 -->
         <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="분 입력">
         
-        <!-- 타이머 개시 버튼 (요구사항 1-3) -->
+        <!-- 타이머 개시 버튼 -->
         <button type="button" class="btn-timer-action" id="btn-timer-start">타이머 시작</button>
         
-        <!-- 타이머 취소 버튼 (요구사항 1-3) -->
+        <!-- 타이머 취소 버튼 -->
         <button type="button" class="btn-timer-action" id="btn-timer-cancel">타이머 취소</button>
       </div>
 
-      <!-- 실시간 남은 시간 표시 라벨 (기본값: 없음, 요구사항 1-4) -->
+      <!-- 실시간 남은 시간 표시 라벨 -->
       <div class="timer-display-label" id="timer-display">남은 시간: 없음</div>
     </section>
 
