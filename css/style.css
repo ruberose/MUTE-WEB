@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MUTE-WEB CSS (Step 3 - Row Alignment & Basic Button Styling)
+   MUTE-WEB CSS (Step 4 - Layout & Switch & Timer Styling)
    ========================================================================== */
 
 /* 브라우저 기본 폰트 및 배경색 설정 */
@@ -13,7 +13,7 @@ body {
 
 /* 전체 컨테이너 정렬 */
 .app-container {
-  max-width: 800px; /* 개별 컨트롤러 버튼 배치를 위해 가로폭을 살짝 확장 */
+  max-width: 650px; /* 불필요한 단추가 줄어들었으므로 콤팩트한 650px로 최적화 */
   margin: 0 auto;
   background-color: #ffffff;
   padding: 30px;
@@ -82,6 +82,7 @@ button {
 /* 리스트 및 슬라이더 영역 감싸는 컨테이너 */
 .sounds-container {
   margin-top: 20px;
+  margin-bottom: 35px;
 }
 
 /* 리스트 기본 여백 초기화 */
@@ -91,7 +92,7 @@ button {
   margin: 0;
 }
 
-/* [Step 3] 라벨, 슬라이더, 개별 재생, 개별 음소거 버튼, 상태 배지를 한 줄로 나란히 배치 */
+/* [Step 4] 라벨, 슬라이더, 개별 ON/OFF 토글 스위치, 상태 표시 배지 정렬 */
 .audio-control-item {
   display: flex;
   align-items: center;
@@ -99,8 +100,7 @@ button {
   padding: 15px 20px;
   border-bottom: 1px solid #ecf0f1;
   font-size: 15px;
-  gap: 12px; /* 간격을 살짝 좁혀 버튼들이 밀리지 않도록 함 */
-  flex-wrap: wrap; /* 창 크기가 작아질 경우를 대비해 래핑 허용 */
+  gap: 15px;
 }
 
 .audio-control-item:last-child {
@@ -110,45 +110,44 @@ button {
 /* 사운드 이름 및 이모지 라벨 영역 */
 .sound-label {
   flex: 1.2;
-  min-width: 130px;
+  min-width: 140px;
   font-weight: 500;
   color: #34495e;
 }
 
 /* 볼륨 조절 슬라이더 영역 */
 .volume-slider {
-  flex: 1.5;
-  min-width: 100px;
+  flex: 2;
+  min-width: 150px;
   height: 6px;
   cursor: pointer;
 }
 
-/* [Step 3] 개별 토글/음소거 제어 버튼들의 기본 투박한 디자인 (요구사항 3) */
-.btn-control-individual {
-  padding: 6px 12px;
+/* [Step 4] 개별 ON/OFF 토글 스위치 버튼 스타일 (요구사항 1-1) */
+.btn-toggle-switch {
+  padding: 8px 16px;
   font-size: 13px;
-  font-weight: normal;
-  border-radius: 4px;
+  font-weight: bold;
+  border-radius: 20px; /* 둥근 스위치형 외형 제공 */
   border: 1px solid #bdc3c7;
-  background-color: #ffffff;
-  color: #2c3e50;
+  background-color: #eceff1;
+  color: #7f8c8d;
   cursor: pointer;
   transition: all 0.15s ease;
-  min-width: 75px; /* 버튼 가로폭 동일화로 단정한 느낌 제공 */
+  min-width: 65px;
   text-align: center;
 }
 
-.btn-control-individual:hover {
-  background-color: #f1f2f6;
-  border-color: #7f8c8d;
+.btn-toggle-switch:hover {
+  background-color: #cfd8dc;
 }
 
-/* [Step 3] 개별 음소거 활성화 시 토글 스타일 피드백 */
-.active-mute {
-  background-color: #ffe6e6 !important;
-  border-color: #ff9999 !important;
-  color: #cc0000 !important;
-  font-weight: 500;
+/* ON 상태 활성화 시 직관적이고 차분한 컬러 피드백 부여 (요구사항 1-1) */
+.active-on {
+  background-color: #e8f8f0 !important;
+  border-color: #a3e4d7 !important;
+  color: #2ecc71 !important;
+  box-shadow: 0 1px 6px rgba(46, 204, 113, 0.15);
 }
 
 /* 작동 상태 표시 배지 */
@@ -181,15 +180,70 @@ button {
   color: #3498db;
 }
 
-/* 반응형 예외 스타일: 모바일 가로폭이 매우 좁아질 때 가독성 확보 */
+/* [Step 4] 오디오 페이드아웃 타이머 영역 스타일 (요구사항 2, 3) */
+.timer-container {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+/* 타이머 제목 스타일 */
+.timer-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #475569;
+  margin-bottom: 15px;
+}
+
+/* 타이머 버튼 배치 컨테이너 */
+.timer-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* 타이머 설정용 투박한 조작 버튼 (요구사항 2) */
+.btn-timer-config {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: normal;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  min-width: 80px;
+}
+
+.btn-timer-config:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* 현재 타이머 남은 시간 출력 라벨 (요구사항 2) */
+.timer-display-label {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1e293b;
+  margin-top: 10px;
+}
+
+/* 반응형 예외 스타일: 가로폭이 매우 좁아질 때 가독성 확보 */
 @media (max-width: 600px) {
   .audio-control-item {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
   }
-  .sound-label, .volume-slider, .btn-control-individual, .sound-status {
+  .sound-label, .volume-slider, .btn-toggle-switch, .sound-status {
     width: 100%;
     text-align: center;
+  }
+  .timer-buttons {
+    flex-wrap: wrap;
   }
 }
