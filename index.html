@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 7 설정 서랍 및 광고)</title>
-  <meta name="description" content="MUTE-WEB의 Step 7 페이지입니다. 메인 화면은 고품격 비주얼 멍 타겟 공간으로 깨끗이 비우고, 300x250 애드센스 배너가 장착된 슬라이드 설정 서랍장을 탑재했습니다.">
+  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 8 테마 선택 화면 추가)</title>
+  <meta name="description" content="MUTE-WEB의 Step 8 페이지입니다. 첫 접속 시 3가지 테마(자연, 판타지, 공포) 중 하나를 선택하는 화면을 노출하고, 선택에 따라 감성적인 백색소음 믹서가 다이내믹하게 열립니다.">
   
   <!-- CSS 스타일시트 상대경로 참조 -->
   <link rel="stylesheet" href="css/style.css">
@@ -13,125 +13,128 @@
 <body>
 
   <!-- ==========================================================================
-       영역 1: 메인 화면 (Main Arena Content)
+       [Step 8] 첫 페이지 테마 선택 화면 (Theme Selection Page)
        ========================================================================== -->
-  <main class="main-arena" id="main-arena">
-    
-    <!-- 우측 상단 설정 서랍 개폐 단추 (⚙️) (요구사항 1-1) -->
-    <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">⚙️ 사운드 조절 및 설정</button>
-
-    <!-- 타이틀 영역 -->
-    <header>
-      <h1 id="app-title">MUTE-WEB ASMR</h1>
-      <p class="description" id="app-description">복잡한 설정은 숨겨두고, 비주얼과 소리에 깊이 몰입해 보세요.</p>
-    </header>
-
-    <!-- 상단 제어 및 마스터 볼륨 영역 -->
-    <section class="top-controls-wrapper" id="top-controls">
-      <!-- 전체 재생 및 전체 정지 버튼 -->
-      <div class="controls-container" id="player-controls">
-        <button type="button" id="btn-play-all">전체 재생</button>
-        <button type="button" id="btn-stop-all">전체 정지</button>
-      </div>
-
-      <!-- 전체 음량을 조절하는 마스터 볼륨 슬라이더 구성 -->
-      <div class="master-volume-container" id="master-volume-box">
-        <label for="master-volume" class="master-volume-label" id="master-volume-label">🎚️ 마스터 볼륨</label>
-        <input type="range" class="master-volume-slider" id="master-volume" min="0" max="1" step="0.01" value="1" aria-label="전체 마스터 볼륨 조절">
-      </div>
-    </section>
-
-    <!-- [Step 7] 중앙 대형 비주얼 멍 타겟 공간 (요구사항 1-1) -->
-    <section class="visual-space" id="visual-space-zone">
-      <div style="text-align: center;">
-        <span style="font-size: 32px; display: block; margin-bottom: 10px;">🌊</span>
-        <span>마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
-      </div>
-    </section>
-
-    <!-- 오디오 페이드아웃 직접 지정 타이머 제어판 -->
-    <section class="timer-container" id="timer-section">
-      <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머</h3>
+  <div id="theme-select-page">
+    <div class="theme-select-container">
+      <!-- 헤더 및 안내 메시지 -->
+      <h1 class="theme-select-title">MUTE-WEB ASMR</h1>
+      <p class="theme-select-subtitle">원하는 백색소음 테마를 선택해 몰입을 시작해 보세요.</p>
       
-      <!-- 수치 입력창, 시작 및 취소 단추 수평 배치 영역 -->
-      <div class="timer-controls-row" id="timer-inputs-container">
-        <!-- 분 단위 정수 입력창 -->
-        <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="분 입력">
-        
-        <!-- 타이머 개시 버튼 -->
-        <button type="button" class="btn-timer-action" id="btn-timer-start">타이머 시작</button>
-        
-        <!-- 타이머 취소 버튼 -->
-        <button type="button" class="btn-timer-action" id="btn-timer-cancel">타이머 취소</button>
+      <!-- 테마 선택 버튼 그룹 (요구사항 2-2: 자연, 판타지, 공포 테마 배치) -->
+      <div class="theme-buttons-grid">
+        <!-- 🌳 자연 테마 선택 버튼 -->
+        <button type="button" class="btn-theme-select" id="btn-theme-nature">
+          <span class="theme-icon">🌳</span>
+          <span class="theme-name">자연 테마</span>
+        </button>
+
+        <!-- 🔮 판타지 테마 선택 버튼 -->
+        <button type="button" class="btn-theme-select" id="btn-theme-fantasy">
+          <span class="theme-icon">🔮</span>
+          <span class="theme-name">판타지 테마</span>
+        </button>
+
+        <!-- 👻 공포 테마 선택 버튼 -->
+        <button type="button" class="btn-theme-select" id="btn-theme-horror">
+          <span class="theme-icon">👻</span>
+          <span class="theme-name">공포 테마</span>
+        </button>
       </div>
-
-      <!-- 실시간 남은 시간 표시 라벨 -->
-      <div class="timer-display-label" id="timer-display">남은 시간: 없음</div>
-    </section>
-
-  </main>
+    </div>
+  </div>
 
 
   <!-- ==========================================================================
-       영역 2: 설정 서랍 (Sidebar Drawer Content) - 요구사항 1-2
+       [Step 8] 기존 믹서 및 멍 페이지 전체 영역 (Mixer Page Container) - 평소 숨김 처리
        ========================================================================== -->
-  <aside class="settings-drawer" id="settings-drawer">
-    
-    <!-- 서랍장 상단 타이틀 및 닫기 버튼 -->
-    <div class="drawer-header" id="drawer-top">
-      <h2 class="drawer-title" id="drawer-heading">⚙️ 사운드 상세 믹서</h2>
-      <button type="button" class="btn-drawer-close" id="btn-drawer-close">✕ 닫기</button>
-    </div>
+  <div id="mixer-page" style="display: none;">
 
-    <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (서랍장 내부로 이동 완료) -->
-    <section class="sounds-container" id="sounds-section">
-      <ul class="sounds-list" id="sounds-list">
-        
-        <!-- 빗소리 제어 컴포넌트 -->
-        <li class="audio-control-item" id="item-rain">
-          <!-- 오디오 이름 및 이모지 라벨 -->
-          <span class="sound-label" id="label-rain">🌧️ 차분한 빗소리</span>
-          <!-- 슬라이더, 스위치, 뱃지 가로 배열용 행 컨테이너 -->
-          <div class="audio-control-row">
-            <input type="range" class="volume-slider" id="volume-rain" min="0" max="1" step="0.01" value="0.5" aria-label="빗소리 볼륨 조절">
-            <button type="button" class="btn-toggle-switch" id="btn-switch-rain">OFF</button>
-            <span class="sound-status" id="status-rain">준비 대기 중</span>
-          </div>
-        </li>
-        
-        <!-- 장작 소리 제어 컴포넌트 -->
-        <li class="audio-control-item" id="item-campfire">
-          <!-- 오디오 이름 및 이모지 라벨 -->
-          <span class="sound-label" id="label-campfire">🔥 따뜻한 장작 소리</span>
-          <!-- 슬라이더, 스위치, 뱃지 가로 배열용 행 컨테이너 -->
-          <div class="audio-control-row">
-            <input type="range" class="volume-slider" id="volume-campfire" min="0" max="1" step="0.01" value="0.5" aria-label="장작 소리 볼륨 조절">
-            <button type="button" class="btn-toggle-switch" id="btn-switch-campfire">OFF</button>
-            <span class="sound-status" id="status-campfire">준비 대기 중</span>
-          </div>
-        </li>
-        
-        <!-- 시냇물 소리 제어 컴포넌트 -->
-        <li class="audio-control-item" id="item-stream">
-          <!-- 오디오 이름 및 이모지 라벨 -->
-          <span class="sound-label" id="label-stream">🏞️ 맑은 시냇물 소리</span>
-          <!-- 슬라이더, 스위치, 뱃지 가로 배열용 행 컨테이너 -->
-          <div class="audio-control-row">
-            <input type="range" class="volume-slider" id="volume-stream" min="0" max="1" step="0.01" value="0.5" aria-label="시냇물 소리 볼륨 조절">
-            <button type="button" class="btn-toggle-switch" id="btn-switch-stream">OFF</button>
-            <span class="sound-status" id="status-stream">준비 대기 중</span>
-          </div>
-        </li>
-        
-      </ul>
-    </section>
+    <!-- ==========================================================================
+         영역 1: 메인 화면 (Main Arena Content)
+         ========================================================================== -->
+    <main class="main-arena" id="main-arena">
+      
+      <!-- 우측 상단 설정 서랍 개폐 단추 (⚙️) -->
+      <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">⚙️ 사운드 조절 및 설정</button>
 
-    <!-- [Step 7] 구글 애드센스 규격(300x250) 광고 배너 예정 영역 확보 (요구사항 1-2) -->
-    <div class="ad-banner-holder" style="width:300px; height:250px; background-color:#eee; margin:20px auto; text-align:center; line-height:250px; color:#666; border:1px solid #cbd5e1; border-radius:4px; font-weight:bold; font-size:12px;">
-      [구글 광고 배너 예정 영역 (300x250)]
-    </div>
+      <!-- 타이틀 영역 -->
+      <header>
+        <h1 id="app-title">MUTE-WEB ASMR</h1>
+        <p class="description" id="app-description">복잡한 설정은 숨겨두고, 비주얼과 소리에 깊이 몰입해 보세요.</p>
+      </header>
 
-  </aside>
+      <!-- 상단 제어 및 마스터 볼륨 영역 -->
+      <section class="top-controls-wrapper" id="top-controls">
+        <!-- 전체 재생 및 전체 정지 버튼 -->
+        <div class="controls-container" id="player-controls">
+          <button type="button" id="btn-play-all">전체 재생</button>
+          <button type="button" id="btn-stop-all">전체 정지</button>
+        </div>
+
+        <!-- 전체 음량을 조절하는 마스터 볼륨 슬라이더 구성 -->
+        <div class="master-volume-container" id="master-volume-box">
+          <label for="master-volume" class="master-volume-label" id="master-volume-label">🎚️ 마스터 볼륨</label>
+          <input type="range" class="master-volume-slider" id="master-volume" min="0" max="1" step="0.01" value="1" aria-label="전체 마스터 볼륨 조절">
+        </div>
+      </section>
+
+      <!-- 중앙 대형 비주얼 멍 타겟 공간 -->
+      <section class="visual-space" id="visual-space-zone">
+        <div style="text-align: center;">
+          <span style="font-size: 32px; display: block; margin-bottom: 10px;" id="theme-visual-emoji">🌊</span>
+          <span id="theme-visual-text">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
+        </div>
+      </section>
+
+      <!-- 오디오 페이드아웃 직접 지정 타이머 제어판 -->
+      <section class="timer-container" id="timer-section">
+        <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머</h3>
+        
+        <!-- 수치 입력창, 시작 및 취소 단추 수평 배치 영역 -->
+        <div class="timer-controls-row" id="timer-inputs-container">
+          <!-- 분 단위 정수 입력창 -->
+          <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="분 입력">
+          
+          <!-- 타이머 개시 버튼 -->
+          <button type="button" class="btn-timer-action" id="btn-timer-start">타이머 시작</button>
+          
+          <!-- 타이머 취소 버튼 -->
+          <button type="button" class="btn-timer-action" id="btn-timer-cancel">타이머 취소</button>
+        </div>
+
+        <!-- 실시간 남은 시간 표시 라벨 -->
+        <div class="timer-display-label" id="timer-display">남은 시간: 없음</div>
+      </section>
+
+    </main>
+
+    <!-- ==========================================================================
+         영역 2: 설정 서랍 (Sidebar Drawer Content)
+         ========================================================================== -->
+    <aside class="settings-drawer" id="settings-drawer">
+      
+      <!-- 서랍장 상단 타이틀 및 닫기 버튼 -->
+      <div class="drawer-header" id="drawer-top">
+        <h2 class="drawer-title" id="drawer-heading">⚙️ 사운드 상세 믹서</h2>
+        <button type="button" class="btn-drawer-close" id="btn-drawer-close">✕ 닫기</button>
+      </div>
+
+      <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (Step 8: 자바스크립트에서 동적 생성) -->
+      <section class="sounds-container" id="sounds-section">
+        <ul class="sounds-list" id="sounds-list">
+          <!-- [Step 8] js/script.js 에서 선택한 테마에 맞는 사운드 아이템들을 동적으로 삽입합니다. -->
+        </ul>
+      </section>
+
+      <!-- 구글 애드센스 규격(300x250) 광고 배너 예정 영역 확보 -->
+      <div class="ad-banner-holder" style="width:300px; height:250px; background-color:#eee; margin:20px auto; text-align:center; line-height:250px; color:#666; border:1px solid #cbd5e1; border-radius:4px; font-weight:bold; font-size:12px;">
+        [구글 광고 배너 예정 영역 (300x250)]
+      </div>
+
+    </aside>
+
+  </div>
 
   <!-- 자바스크립트 모듈 상대경로 참조 -->
   <script src="js/script.js"></script>

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MUTE-WEB CSS (Step 7 - Split Layout, Sidebar Drawer & Ad Banner Space)
+   MUTE-WEB CSS (Step 8 - Theme Selection Page & Responsive Sidebar Layout)
    ========================================================================== */
 
 /* 브라우저 기본 폰트 및 배경색 설정 */
@@ -14,7 +14,107 @@ body {
   position: relative;
 }
 
-/* [Step 7] 메인 화면 레이아웃 (Main Arena Container) */
+/* ==========================================================================
+   [Step 8] 테마 선택 페이지 스타일링 (Theme Selection Page)
+   ========================================================================== */
+#theme-select-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  background: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 100%);
+  padding: 20px;
+}
+
+.theme-select-container {
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  padding: 40px 20px;
+}
+
+.theme-select-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.theme-select-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 40px;
+}
+
+/* 3개 테마 버튼을 배치할 3열 그리드 */
+.theme-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  justify-content: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* 테마 선택용 큰 사각형 버튼 스타일 */
+.btn-theme-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 35px 20px;
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* 테마별 호버 감도 및 미세한 스케일 업 애니메이션 */
+.btn-theme-select:hover {
+  transform: translateY(-5px);
+  border-color: #94a3b8;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 개별 테마 버튼 활성화 대비 포인트 색상 지정 (투박함 속에 깔끔함) */
+#btn-theme-nature:hover {
+  background-color: #f0fdf4;
+  border-color: #86efac;
+}
+#btn-theme-fantasy:hover {
+  background-color: #f5f3ff;
+  border-color: #c084fc;
+}
+#btn-theme-horror:hover {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.theme-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.btn-theme-select:hover .theme-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.theme-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #334155;
+}
+
+/* ==========================================================================
+   기존 믹서 화면 레이아웃 (Main Arena Container)
+   ========================================================================== */
 .main-arena {
   max-width: 650px;
   margin: 60px auto;
@@ -120,7 +220,7 @@ button {
   cursor: pointer;
 }
 
-/* [Step 7] 우측 상단 설정 기어 버튼 스타일 (요구사항 1-1) */
+/* 우측 상단 설정 기어 버튼 스타일 */
 .btn-settings-toggle {
   position: absolute;
   top: 20px;
@@ -140,7 +240,7 @@ button {
   background-color: #2c3e50;
 }
 
-/* [Step 7] 중앙 대형 비주얼 멍 타겟 공간 (요구사항 1-1) */
+/* 중앙 대형 비주얼 멍 타겟 공간 */
 .visual-space {
   height: 220px;
   background-color: #f8fafc;
@@ -259,9 +359,8 @@ button {
 }
 
 /* ==========================================================================
-   [Step 7] 설정 서랍장 영역 (Sidebar Drawer Styling) - 요구사항 1-2, 3
+   설정 서랍장 영역 (Sidebar Drawer Styling)
    ========================================================================== */
-
 .settings-drawer {
   position: fixed;
   top: 0;
@@ -275,14 +374,14 @@ button {
   box-sizing: border-box;
   overflow-y: auto; /* 내용이 길어질 경우 스크롤 허용 */
   
-  /* [Step 7] 평소에는 화면 오른쪽 밖으로 100% 밀어 숨김 처리 (요구사항 3) */
+  /* 평소에는 화면 오른쪽 밖으로 100% 밀어 숨김 처리 */
   transform: translateX(100%);
   
   /* 부드럽게 스르륵 여닫히는 애니메이션 전환 기입 */
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* [Step 7] ⚙️ 버튼 클릭에 의해 활성화 되었을 때 서랍장 출현 (요구사항 3) */
+/* ⚙️ 버튼 클릭에 의해 활성화 되었을 때 서랍장 출현 */
 .settings-drawer.active {
   transform: translateX(0);
 }
@@ -415,7 +514,9 @@ button {
   color: #3498db;
 }
 
-/* 반응형 예외 스타일: 모바일 가로폭이 매우 좁아질 때 메인 화면 여백 조정 */
+/* ==========================================================================
+   반응형 미디어 쿼리
+   ========================================================================== */
 @media (max-width: 700px) {
   body {
     padding: 10px;
@@ -434,5 +535,15 @@ button {
   }
   .settings-drawer {
     width: 100%; /* 모바일에서는 서랍장을 전체 화면으로 확장 */
+  }
+  
+  /* 테마 버튼 좁은 화면에서 1열로 변경하여 레이아웃 깨짐 방지 */
+  .theme-buttons-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .btn-theme-select {
+    padding: 25px 15px;
   }
 }

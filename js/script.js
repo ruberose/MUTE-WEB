@@ -1,26 +1,114 @@
 /**
  * ==========================================================================
- * MUTE-WEB ASMR White Noise Web Application (Step 7 - Sidebar Drawer & Ads)
+ * MUTE-WEB ASMR White Noise Web Application (Step 8 - Theme System & Data Struct)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
- * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 7' 전체 비즈니스 엔진을 담당합니다.
- * 기존의 마스터 볼륨 조절, 커스텀 취침 타이머, 10초 페이드아웃 및 LocalStorage 저장/로드 모듈을 
- * 완벽히 계승하면서, 메인 화면을 정화하고 설정을 숨겨두는 '설정 서랍(Drawer)'의 개폐(Toggle) 엔진을 추가했습니다.
+ * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 8' 전체 비즈니스 엔진을 담당합니다.
+ * 기존의 마스터 볼륨, 커스텀 취침 타이머, 10초 페이드아웃 및 설정 서랍 엔진을 완벽히 보존하면서,
+ * 3가지 테마(자연, 판타지, 공포)에 최적화된 오디오 데이터 구조화(themeData)와 유저 선택에 따른 
+ * 동적 화면 전환, 사운드 리스트의 동적 DOM 생성 및 테마별 개별 LocalStorage 관리 모듈을 확장 탑재했습니다.
  * 
  * 주요 기능:
- * 1. 무료 라이센스 및 CORS 허용 고안정성 GitHub Raw MP3 음원 3개 관리
- * 2. 각 오디오 객체 초기화, 무한 반복(loop) 및 초기 볼륨(0.5) 설정
- * 3. 개별 볼륨 슬라이더 조절 시 실시간 오디오 볼륨 크기 동기화 (마스터 볼륨 공식 대입)
- * 4. 통합 ON/OFF 스위치: 개별 재생/정지 제어
- * 5. 사용자 직접 입력 타이머: 유효성 검사 및 카운트다운 타이머 구동
- * 6. 마스터 볼륨 슬라이더: 비례 볼륨 조절
- * 7. LocalStorage 설정 백업/로드 기능 탑재
- * 8. [New] 설정 서랍(Sidebar Drawer) 제어 로직 (요구사항 2-1):
- *    - 메인 화면 우측 상단 [⚙️] 버튼 클릭 시 서랍장에 'active' 클래스를 붙여 부드럽게 열기
- *    - 서랍 내부의 [✕ 닫기] 버튼 클릭 시 서랍장을 닫아 메인 화면 몰입감 복구
- *    - HTML의 위치 구조가 사이드바로 전부 변경되었음에도, 모든 오디오 볼륨 제어 및 스위치 바인딩이 100% 정상 연동 동작
+ * 1. [New] 테마별 사운드 데이터 구조화 (nature, fantasy, horror) 및 무료 mp3 연결
+ * 2. [New] 초기 테마 선택 버튼 클릭 시 믹서 화면으로의 화면 전환 로직 (selectTheme)
+ * 3. [New] 선택한 테마에 매핑되는 오디오 슬라이더, ON/OFF 스위치, 뱃지의 동적 DOM 렌더링 (renderAudioControls)
+ * 4. [New] 테마별로 완전히 독립적으로 관리되는 LocalStorage 설정 백업/로드 모듈
+ * 5. 마스터 볼륨 슬라이더 및 타이머/페이드아웃 통합 제어 엔진 그대로 상속 연동
  */
+
+// ==========================================================================
+// 0. 테마별 오디오 메타데이터 정의 (Step 8 핵심 데이터 구조화 - 요구사항 1)
+// ==========================================================================
+
+/**
+ * @typedef {Object} SoundInfo
+ * @property {string} id - 사운드 고유 식별자 (DOM 생성 및 오디오 바인딩용)
+ * @property {string} name - 한글 표시용 이름
+ * @property {string} url - CORS가 허용된 직렬 스트리밍용 MP3 음원 주소
+ */
+
+/**
+ * @typedef {Object} ThemeData
+ * @property {string} title - 테마 타이틀
+ * @property {string} bgName - 테마의 주 배경 개념
+ * @property {string} emoji - 멍 공간에 매핑할 중앙 비주얼 이모지
+ * @property {string} visualText - 멍 공간에 매핑할 하단 텍스트 설명
+ * @property {SoundInfo[]} sounds - 해당 테마가 가지는 3가지 상세 백색소음 목록
+ */
+
+/** @type {Object.<string, ThemeData>} */
+const themeData = {
+  nature: {
+    title: "자연",
+    bgName: "모닥불",
+    emoji: "🌊",
+    visualText: "마음의 평화를 위한 대형 비주얼 멍 타겟 공간",
+    sounds: [
+      {
+        id: 'rain',
+        name: '🌧️ 차분한 빗소리',
+        url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/rain.mp3'
+      },
+      {
+        id: 'campfire',
+        name: '🔥 따뜻한 장작 소리',
+        url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/campfire.mp3'
+      },
+      {
+        id: 'stream',
+        name: '🏞️ 맑은 시냇물 소리',
+        url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/river.mp3'
+      }
+    ]
+  },
+  fantasy: {
+    title: "판타지",
+    bgName: "마법 상점",
+    emoji: "🔮",
+    visualText: "신비롭고 몽환적인 판타지 상점 속 멍 타겟 공간",
+    sounds: [
+      {
+        id: 'fantasy_melody',
+        name: '✨ 신비한 선율',
+        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+      },
+      {
+        id: 'clock',
+        name: '🕰️ 시계탑 소리',
+        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
+      },
+      {
+        id: 'potion',
+        name: '🧪 물약 끓는 소리',
+        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'
+      }
+    ]
+  },
+  horror: {
+    title: "공포",
+    bgName: "폐가",
+    emoji: "👻",
+    visualText: "서늘한 기운이 맴도는 으스스한 폐가 속 멍 타겟 공간",
+    sounds: [
+      {
+        id: 'spooky_wind',
+        name: '💨 으스스한 바람',
+        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'
+      },
+      {
+        id: 'creaky_door',
+        name: '🚪 문 삐걱 소리',
+        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'
+      },
+      {
+        id: 'footstep',
+        name: '👣 발소리',
+        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'
+      }
+    ]
+  }
+};
 
 // ==========================================================================
 // 1. 전역 상태 관리
@@ -30,7 +118,7 @@
  * @typedef {Object} AsmrSound
  * @property {string} id - 고유 식별자 (HTML 요소 매칭용)
  * @property {string} name - 사용자에게 표시될 이름
- * @property {string} url - 오디오 스트리밍용 GitHub Raw MP3 주소
+ * @property {string} url - 오디오 스트리밍용 MP3 주소
  * @property {HTMLAudioElement|null} audioInstance - 실제 재생을 담당할 오디오 객체
  * @property {string} status - 현재 재생 상태 ('준비 대기 중', '준비 완료', '재생 중', '정지됨')
  * @property {number} volume - 개별 지정 볼륨 크기 (0.0 ~ 1.0, 기본값: 0.5)
@@ -38,38 +126,13 @@
  */
 
 /** @type {AsmrSound[]} */
-const asmrSounds = [
-  {
-    id: 'rain',
-    name: '차분한 빗소리',
-    url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/rain.mp3',
-    audioInstance: null,
-    status: '준비 대기 중',
-    volume: 0.5,
-    isPlaying: false
-  },
-  {
-    id: 'campfire',
-    name: '따뜻한 장작 소리',
-    url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/campfire.mp3',
-    audioInstance: null,
-    status: '준비 대기 중',
-    volume: 0.5,
-    isPlaying: false
-  },
-  {
-    id: 'stream',
-    name: '맑은 시냇물 소리',
-    url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/river.mp3',
-    audioInstance: null,
-    status: '준비 대기 중',
-    volume: 0.5,
-    isPlaying: false
-  }
-];
+let asmrSounds = []; // 선택한 테마에 의해 동적으로 구성 및 채워지는 활성 사운드 리스트
 
-// LocalStorage 키값 설정
-const STORAGE_KEY = 'mute_web_user_settings';
+// [Step 8] 유저가 선택한 테마 ID를 저장하는 전역 변수 (요구사항 3-3)
+let currentThemeId = ''; 
+
+// 신 버전 로컬스토리지 키 설정 (기존 키와 데이터 포맷 충돌 방지)
+const STORAGE_KEY = 'mute_web_theme_settings_v3';
 
 // 마스터 볼륨 및 타이머 제어용 전역 변수
 let masterVolume = 1.0; // 마스터 볼륨 기본값
@@ -78,7 +141,100 @@ let countdownIntervalId = null; // 카운트다운 타이머 인터벌 ID
 let isFadingOut = false; // 현재 페이드아웃 감쇄 동작이 가동 중인지 여부
 
 // ==========================================================================
-// 2. 오디오 초기화 및 기본값 매핑 함수
+// 2. 화면 전환 및 동적 DOM 렌더링 모듈 (Step 8 핵심 로직)
+// ==========================================================================
+
+/**
+ * [Step 8] 유저가 첫 화면에서 특정 테마를 선택했을 때 동작하는 화면 전환 및 믹서 가동 처리기 (요구사항 3)
+ * 
+ * @param {string} themeId - 선택된 테마 식별자 ('nature', 'fantasy', 'horror')
+ */
+function selectTheme(themeId) {
+  if (!themeData[themeId]) {
+    console.error(`[에러] 존재하지 않는 테마 ID입니다: ${themeId}`);
+    return;
+  }
+
+  currentThemeId = themeId;
+  console.log(`선택된 테마: ${themeId}`); // 요구사항 3-2 로그 출력
+
+  // 1. 테마에 따른 오디오 가변 배열 리포매팅
+  const themeInfo = themeData[themeId];
+  asmrSounds = themeInfo.sounds.map(sound => ({
+    id: sound.id,
+    name: sound.name,
+    url: sound.url,
+    audioInstance: null,
+    status: '준비 대기 중',
+    volume: 0.5,
+    isPlaying: false
+  }));
+
+  // 2. 비주얼 멍 타겟 공간 테마 맞춤형 이모지 및 텍스트 갱신
+  const visualEmoji = document.getElementById('theme-visual-emoji');
+  const visualText = document.getElementById('theme-visual-text');
+  if (visualEmoji) visualEmoji.textContent = themeInfo.emoji;
+  if (visualText) visualText.textContent = themeInfo.visualText;
+
+  // 3. 서랍장 헤더 타이틀에 현재 테마 이름 바인딩
+  const drawerHeading = document.getElementById('drawer-heading');
+  if (drawerHeading) {
+    drawerHeading.textContent = `⚙️ ${themeInfo.title} 테마 상세 믹서`;
+  }
+
+  // 4. 설정 서랍 내부 오디오 조절 UI 동적 생성 (Dynamic DOM Generation)
+  renderAudioControls();
+
+  // 5. 오디오 인스턴스 생성 및 로딩 개시
+  initializeAudioSources();
+
+  // 6. LocalStorage 로드: 해당 테마에 저장되어 있는 세팅값이 있다면 강제 복구
+  loadSettings();
+
+  // 7. 새로 구성된 동적 엘리먼트들에 대하여 개별 이벤트 리스너 재바인딩
+  setupAudioEventListeners();
+
+  // 8. 화면 전환 처리 (theme-select-page 숨김, mixer-page 노출)
+  const themePage = document.getElementById('theme-select-page');
+  const mixerPage = document.getElementById('mixer-page');
+  
+  if (themePage) themePage.style.display = 'none';
+  if (mixerPage) mixerPage.style.display = 'block';
+}
+
+/**
+ * [Step 8] 선택된 테마의 sounds 배열 데이터를 바탕으로 
+ * 설정 서랍 내의 `#sounds-list` 영역에 개별 오디오 제어 UI 엘리먼트들을 동적으로 주입합니다.
+ */
+function renderAudioControls() {
+  const soundsList = document.getElementById('sounds-list');
+  if (!soundsList) return;
+
+  // 기존 렌더링 내용 소거
+  soundsList.innerHTML = '';
+
+  asmrSounds.forEach((sound) => {
+    // <li> 엘리먼트 생성
+    const li = document.createElement('li');
+    li.className = 'audio-control-item';
+    li.id = `item-${sound.id}`;
+
+    // 내부 HTML 내용 템플릿 리터럴로 조합
+    li.innerHTML = `
+      <span class="sound-label" id="label-${sound.id}">${sound.name}</span>
+      <div class="audio-control-row">
+        <input type="range" class="volume-slider" id="volume-${sound.id}" min="0" max="1" step="0.01" value="${sound.volume}" aria-label="${sound.name} 볼륨 조절">
+        <button type="button" class="btn-toggle-switch" id="btn-switch-${sound.id}">OFF</button>
+        <span class="sound-status" id="status-${sound.id}" data-status="${sound.status}">${sound.status}</span>
+      </div>
+    `;
+
+    soundsList.appendChild(li);
+  });
+}
+
+// ==========================================================================
+// 3. 오디오 초기화 및 기본값 매핑 함수
 // ==========================================================================
 
 /**
@@ -109,17 +265,37 @@ function initializeAudioSources() {
 }
 
 // ==========================================================================
-// 3. LocalStorage 유저 설정 저장 및 로드 모듈
+// 4. LocalStorage 유저 설정 저장 및 로드 모듈 (테마별 데이터 격리화)
 // ==========================================================================
 
 /**
  * [LocalStorage 설정 자동 저장 함수]
  * 유저가 볼륨을 조정하거나 스위치를 건드릴 때마다, 
- * 마스터 볼륨과 개별 오디오들의 볼륨 및 ON/OFF 상태를 직렬화하여 브라우저에 비동기식 반영합니다.
+ * 현재 선택된 테마 ID와 테마별 개별 세팅(마스터 볼륨, 사운드 볼륨, ON/OFF 스위치 상태)을 
+ * LocalStorage에 직렬화하여 영구 백업합니다.
  */
 function saveSettings() {
+  if (!currentThemeId) return; // 선택된 테마가 없으면 저장하지 않음
+
   try {
-    const userSettings = {
+    // 1. 기존 스토리지에서 전체 데이터 뼈대를 불러옵니다.
+    const rawData = localStorage.getItem(STORAGE_KEY);
+    let fullSettings = {
+      lastThemeId: currentThemeId,
+      themes: {}
+    };
+
+    if (rawData) {
+      try {
+        fullSettings = JSON.parse(rawData);
+      } catch (e) {
+        console.warn('[경고] LocalStorage 파싱 오류로 설정 뼈대를 새로 리셋하여 백업합니다.');
+      }
+    }
+
+    // 2. 현재 활성화된 테마 정보 갱신 및 상태 갱신
+    fullSettings.lastThemeId = currentThemeId;
+    fullSettings.themes[currentThemeId] = {
       masterVolume: masterVolume,
       sounds: asmrSounds.map((sound) => ({
         id: sound.id,
@@ -128,8 +304,8 @@ function saveSettings() {
       }))
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userSettings));
-    console.log('[설정 자동 저장] 유저의 사운드 설정 상태가 성공적으로 스토리지에 백업되었습니다.');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(fullSettings));
+    console.log(`[설정 자동 저장] '${currentThemeId}' 테마의 세팅 상태가 로컬 스토리지에 백업되었습니다.`);
   } catch (error) {
     console.error('[설정 저장 실패] LocalStorage에 접근할 수 없습니다:', error);
   }
@@ -137,24 +313,35 @@ function saveSettings() {
 
 /**
  * [LocalStorage 설정 자동 로드 및 상태 복원 함수]
- * 페이지가 최초 실행될 때 로컬 저장소에 백업해 두었던 유저 설정 데이터를 불러옵니다.
- * 데이터가 존재하면 슬라이더 위치, 스위치 배지 상태, 오디오 실제 볼륨을 완벽하게 강제 복구(동기화)합니다.
+ * 테마를 선택했을 때 로컬 저장소에 백업해 두었던 해당 테마의 유저 설정 데이터를 불러옵니다.
+ * 데이터가 존재하면 마스터 볼륨 및 개별 슬라이더 위치, 스위치 상태 등을 실시간으로 동기화합니다.
  */
 function loadSettings() {
+  if (!currentThemeId) return;
+
   try {
     const rawData = localStorage.getItem(STORAGE_KEY);
     
     if (!rawData) {
-      console.log('[설정 로드] 저장된 이전 유저 설정 데이터가 존재하지 않아 기본값으로 초기 구동을 유지합니다.');
+      console.log(`[설정 로드] '${currentThemeId}' 테마의 이전 설정 데이터가 존재하지 않아 기본값으로 작동합니다.`);
       return;
     }
 
-    const savedSettings = JSON.parse(rawData);
-    console.log('[설정 로드 성공] 이전 유저 세팅을 발견하여 복원 프로세스를 가동합니다:', savedSettings);
+    const fullSettings = JSON.parse(rawData);
+    
+    // 현재 테마의 설정만 골라냅니다.
+    const themeSettings = fullSettings.themes && fullSettings.themes[currentThemeId];
+    
+    if (!themeSettings) {
+      console.log(`[설정 로드] '${currentThemeId}' 테마의 기존 저장 기록이 없습니다.`);
+      return;
+    }
+
+    console.log(`[설정 로드 성공] '${currentThemeId}' 테마 세팅을 발견하여 복원을 시작합니다:`, themeSettings);
 
     // 1. 마스터 볼륨 상태 복원 및 HTML 마스터 슬라이더 위치 동기화
-    if (typeof savedSettings.masterVolume === 'number') {
-      masterVolume = savedSettings.masterVolume;
+    if (typeof themeSettings.masterVolume === 'number') {
+      masterVolume = themeSettings.masterVolume;
       const masterSlider = document.getElementById('master-volume');
       if (masterSlider) {
         masterSlider.value = masterVolume;
@@ -162,8 +349,8 @@ function loadSettings() {
     }
 
     // 2. 개별 오디오 설정 복원 및 HTML 엘리먼트 위치/텍스트 강제 동기화
-    if (Array.isArray(savedSettings.sounds)) {
-      savedSettings.sounds.forEach((savedSound) => {
+    if (Array.isArray(themeSettings.sounds)) {
+      themeSettings.sounds.forEach((savedSound) => {
         const sound = asmrSounds.find((s) => s.id === savedSound.id);
         
         if (sound) {
@@ -185,7 +372,7 @@ function loadSettings() {
                   renderStatus();
                 })
                 .catch((autoplayError) => {
-                  console.warn(`[자동재생 제한] 브라우저 보안 정책에 의해 ${sound.name}의 자동 재생이 대기 상태입니다. (유저 액션 시 재생)`);
+                  console.warn(`[자동재생 제한] 브라우저 보안 정책으로 인해 '${sound.name}' 재생이 대기 상태입니다. (유저 액션 필요)`);
                   sound.status = '준비 완료'; 
                   renderStatus();
                 });
@@ -198,14 +385,14 @@ function loadSettings() {
     }
 
     renderStatus();
-    console.log('[설정 복원 완료] 모든 슬라이더 위치 및 음소거/스위치 배지가 실시간 동기화되었습니다.');
+    console.log(`[설정 복원 완료] '${currentThemeId}' 테마의 모든 슬라이더 및 스위치 복구가 성공적으로 끝났습니다.`);
   } catch (error) {
     console.error('[설정 로드 실패] 데이터를 읽어오는 중 에러가 발생하여 기본값으로 구동합니다:', error);
   }
 }
 
 // ==========================================================================
-// 4. 볼륨 연산 엔진 함수
+// 5. 볼륨 연산 엔진 함수
 // ==========================================================================
 
 /**
@@ -239,7 +426,7 @@ function syncAllAudioVolumes() {
 }
 
 // ==========================================================================
-// 5. UI 렌더링 함수
+// 6. UI 렌더링 함수
 // ==========================================================================
 
 /**
@@ -269,7 +456,7 @@ function renderStatus() {
 }
 
 // ==========================================================================
-// 6. 오디오 제어 핵심 함수
+// 7. 오디오 제어 핵심 함수
 // ==========================================================================
 
 /**
@@ -397,7 +584,7 @@ function updateMasterVolume(newMasterVolume) {
 }
 
 // ==========================================================================
-// 7. 직접 입력 방식 오디오 타이머 로직
+// 8. 직접 입력 방식 오디오 타이머 로직
 // ==========================================================================
 
 /**
@@ -544,11 +731,11 @@ function updateTimerDisplay(text) {
 }
 
 // ==========================================================================
-// 8. 설정 서랍(Sidebar Drawer) 토글 모듈 (Step 7 핵심 추가 기능)
+// 9. 설정 서랍(Sidebar Drawer) 토글 모듈
 // ==========================================================================
 
 /**
- * [설정 서랍 상태 토글 함수] (요구사항 2-1)
+ * [설정 서랍 상태 토글 함수]
  * 우측 상단 기어 버튼 클릭 시 Drawer를 스르륵 열고 닫도록 'active' 클래스를 토글 제어합니다.
  * 
  * @param {boolean} isOpen - 명시적으로 열거나 닫을지 여부 (생략 시 토글)
@@ -564,7 +751,6 @@ function toggleSettingsDrawer(isOpen) {
       drawerElement.classList.remove('active');
     }
   } else {
-    // 인자 생략 시 active 클래스 토글
     drawerElement.classList.toggle('active');
   }
 
@@ -573,35 +759,14 @@ function toggleSettingsDrawer(isOpen) {
 }
 
 // ==========================================================================
-// 9. 이벤트 바인딩 및 어플리케이션 진입점
+// 10. 이벤트 바인딩 및 어플리케이션 진입점
 // ==========================================================================
 
 /**
- * 버튼 및 슬라이더, 타이머 등과 비즈니스 제어 로직 간의 이벤트 연동을 수행합니다.
+ * [Step 8] 동적으로 렌더링된 각 사운드 컨트롤러 엘리먼트(볼륨 슬라이더, ON/OFF 스위치)에 
+ * 실시간 오디오 이벤트 리스너를 안전하게 개별 바인딩합니다.
  */
-function setupEventListeners() {
-  // 1. 전체 제어 상단 버튼 바인딩
-  const playAllButton = document.getElementById('btn-play-all');
-  const stopAllButton = document.getElementById('btn-stop-all');
-
-  if (playAllButton) {
-    playAllButton.addEventListener('click', playAllSounds);
-  }
-
-  if (stopAllButton) {
-    stopAllButton.addEventListener('click', stopAllSounds);
-  }
-
-  // 2. 마스터 볼륨 슬라이더 조절 이벤트 감지 등록
-  const masterVolumeSlider = document.getElementById('master-volume');
-  if (masterVolumeSlider) {
-    masterVolumeSlider.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value);
-      updateMasterVolume(val);
-    });
-  }
-
-  // 3. 각 사운드별 개별 엘리먼트(볼륨 슬라이더, ON/OFF 스위치) 이벤트 등록
+function setupAudioEventListeners() {
   asmrSounds.forEach((sound) => {
     const sliderElement = document.getElementById(`volume-${sound.id}`);
     if (sliderElement) {
@@ -618,6 +783,47 @@ function setupEventListeners() {
       });
     }
   });
+}
+
+/**
+ * 공통 제어 버튼 및 테마 선택 버튼 등에 대하여 전체 이벤트 바인딩을 수행합니다.
+ */
+function setupEventListeners() {
+  // 1. [New] 테마 선택 버튼 리스너 바인딩 (요구사항 3-3)
+  const btnNature = document.getElementById('btn-theme-nature');
+  const btnFantasy = document.getElementById('btn-theme-fantasy');
+  const btnHorror = document.getElementById('btn-theme-horror');
+
+  if (btnNature) {
+    btnNature.addEventListener('click', () => selectTheme('nature'));
+  }
+  if (btnFantasy) {
+    btnFantasy.addEventListener('click', () => selectTheme('fantasy'));
+  }
+  if (btnHorror) {
+    btnHorror.addEventListener('click', () => selectTheme('horror'));
+  }
+
+  // 2. 전체 제어 상단 버튼 바인딩
+  const playAllButton = document.getElementById('btn-play-all');
+  const stopAllButton = document.getElementById('btn-stop-all');
+
+  if (playAllButton) {
+    playAllButton.addEventListener('click', playAllSounds);
+  }
+
+  if (stopAllButton) {
+    stopAllButton.addEventListener('click', stopAllSounds);
+  }
+
+  // 3. 마스터 볼륨 슬라이더 조절 이벤트 감지 등록
+  const masterVolumeSlider = document.getElementById('master-volume');
+  if (masterVolumeSlider) {
+    masterVolumeSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      updateMasterVolume(val);
+    });
+  }
 
   // 4. 직접 입력 방식 타이머 제어용 버튼 이벤트 등록
   const timerStartBtn = document.getElementById('btn-timer-start');
@@ -630,7 +836,7 @@ function setupEventListeners() {
     timerCancelBtn.addEventListener('click', handleCancelTimer);
   }
 
-  // 5. [New] 설정 서랍(Sidebar Drawer) 열기 및 닫기 버튼 이벤트 바인딩 (요구사항 2-1)
+  // 5. 설정 서랍(Sidebar Drawer) 열기 및 닫기 버튼 이벤트 바인딩
   const drawerToggleBtn = document.getElementById('btn-drawer-toggle');
   const drawerCloseBtn = document.getElementById('btn-drawer-close');
 
@@ -642,9 +848,7 @@ function setupEventListeners() {
   }
 }
 
-// 문서 로드가 완료되면 오디오 초기화, 유저 세팅 로드 및 이벤트 리스너 실행
+// 문서 로드가 완료되면 초기 이벤트 리스너 실행 (첫 화면 테마 선택 대기)
 document.addEventListener('DOMContentLoaded', () => {
-  initializeAudioSources(); // 1. 오디오 객체들 메모리 가동
-  loadSettings();           // 2. LocalStorage에서 백업 데이터 확인 및 복구 동기화
-  setupEventListeners();    // 3. 브라우저 이벤트 바인딩 설정
+  setupEventListeners();    // 테마 선택 및 전체 공통 이벤트 바인딩 설정
 });
