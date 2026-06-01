@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 4 토글스위치 및 타이머)</title>
-  <meta name="description" content="MUTE-WEB의 Step 4 페이지입니다. 군더더기 버튼을 제거한 통합 ON/OFF 스위치와 수면 모드를 위한 페이드아웃 카운트다운 타이머가 가동됩니다.">
+  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 5 직접입력 타이머)</title>
+  <meta name="description" content="MUTE-WEB의 Step 5 페이지입니다. 유저가 원하는 시간을 직접 분 단위로 지정할 수 있는 수치 입력형 타이머와 10초 페이드아웃 기능이 완벽히 조화되어 있습니다.">
   
   <!-- CSS 스타일시트 상대경로 참조 -->
   <link rel="stylesheet" href="css/style.css">
@@ -17,8 +17,8 @@
     
     <!-- 타이틀 영역 -->
     <header>
-      <h1 id="app-title">MUTE-WEB ASMR (Step 4)</h1>
-      <p class="description" id="app-description">단일 ON/OFF 토글 스위치 및 감쇠식 페이드아웃 타이머 기능이 추가된 검증 페이지입니다.</p>
+      <h1 id="app-title">MUTE-WEB ASMR (Step 5)</h1>
+      <p class="description" id="app-description">사용자 직접 지정 방식 타이머 및 10초 선형 감쇠 기능이 추가된 검증 페이지입니다.</p>
     </header>
 
     <!-- 컨트롤러 영역: 전체 재생 및 전체 정지 버튼 -->
@@ -27,7 +27,7 @@
       <button type="button" id="btn-stop-all">전체 정지</button>
     </section>
 
-    <!-- 오디오 목록 및 개별 제어판 레이아웃 (요구사항 1-1) -->
+    <!-- 오디오 목록 및 개별 제어판 레이아웃 -->
     <section class="sounds-container" id="sounds-section">
       <h2 style="font-size: 18px; margin-bottom: 15px; color: #34495e;">음원별 볼륨 및 동작 제어</h2>
       
@@ -39,7 +39,7 @@
           <span class="sound-label" id="label-rain">🌧️ 차분한 빗소리</span>
           <!-- 개별 볼륨 슬라이더 -->
           <input type="range" class="volume-slider" id="volume-rain" min="0" max="1" step="0.01" value="0.5" aria-label="빗소리 볼륨 조절">
-          <!-- 통합 ON/OFF 토글 스위치 버튼 (요구사항 1-1, 3-1) -->
+          <!-- 통합 ON/OFF 토글 스위치 버튼 -->
           <button type="button" class="btn-toggle-switch" id="btn-switch-rain">OFF</button>
           <!-- 오디오 실시간 작동 상태 표시 -->
           <span class="sound-status" id="status-rain">준비 대기 중</span>
@@ -51,7 +51,7 @@
           <span class="sound-label" id="label-campfire">🔥 따뜻한 장작 소리</span>
           <!-- 개별 볼륨 슬라이더 -->
           <input type="range" class="volume-slider" id="volume-campfire" min="0" max="1" step="0.01" value="0.5" aria-label="장작 소리 볼륨 조절">
-          <!-- 통합 ON/OFF 토글 스위치 버튼 (요구사항 1-1, 3-1) -->
+          <!-- 통합 ON/OFF 토글 스위치 버튼 -->
           <button type="button" class="btn-toggle-switch" id="btn-switch-campfire">OFF</button>
           <!-- 오디오 실시간 작동 상태 표시 -->
           <span class="sound-status" id="status-campfire">준비 대기 중</span>
@@ -63,7 +63,7 @@
           <span class="sound-label" id="label-stream">🏞️ 맑은 시냇물 소리</span>
           <!-- 개별 볼륨 슬라이더 -->
           <input type="range" class="volume-slider" id="volume-stream" min="0" max="1" step="0.01" value="0.5" aria-label="시냇물 소리 볼륨 조절">
-          <!-- 통합 ON/OFF 토글 스위치 버튼 (요구사항 1-1, 3-1) -->
+          <!-- 통합 ON/OFF 토글 스위치 버튼 -->
           <button type="button" class="btn-toggle-switch" id="btn-switch-stream">OFF</button>
           <!-- 오디오 실시간 작동 상태 표시 -->
           <span class="sound-status" id="status-stream">준비 대기 중</span>
@@ -72,19 +72,23 @@
       </ul>
     </section>
 
-    <!-- [Step 4] 오디오 페이드아웃 타이머 제어판 (요구사항 2, 3) -->
+    <!-- [Step 5] 오디오 페이드아웃 직접 지정 타이머 제어판 (요구사항 1) -->
     <section class="timer-container" id="timer-section">
-      <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머</h3>
+      <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머 (직접 지정)</h3>
       
-      <!-- 타이머 설정 버튼들 -->
-      <div class="timer-buttons" id="timer-buttons-container">
-        <button type="button" class="btn-timer-config" id="btn-timer-off">타이머 안 함</button>
-        <button type="button" class="btn-timer-config" id="btn-timer-1m">1분</button>
-        <button type="button" class="btn-timer-config" id="btn-timer-5m">5분</button>
-        <button type="button" class="btn-timer-config" id="btn-timer-10m">10분</button>
+      <!-- 수치 입력창, 시작 및 취소 단추 수평 배치 영역 -->
+      <div class="timer-controls-row" id="timer-inputs-container">
+        <!-- 분 단위 정수 입력창 (요구사항 1-2) -->
+        <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="분 입력">
+        
+        <!-- 타이머 개시 버튼 (요구사항 1-3) -->
+        <button type="button" class="btn-timer-action" id="btn-timer-start">타이머 시작</button>
+        
+        <!-- 타이머 취소 버튼 (요구사항 1-3) -->
+        <button type="button" class="btn-timer-action" id="btn-timer-cancel">타이머 취소</button>
       </div>
 
-      <!-- 실시간 남은 시간 표시 라벨 (기본값: 없음) -->
+      <!-- 실시간 남은 시간 표시 라벨 (기본값: 없음, 요구사항 1-4) -->
       <div class="timer-display-label" id="timer-display">남은 시간: 없음</div>
     </section>
 

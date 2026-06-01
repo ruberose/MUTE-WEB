@@ -1,20 +1,22 @@
 /**
  * ==========================================================================
- * MUTE-WEB ASMR White Noise Web Application (Step 4 - Toggle Switch & Timer)
+ * MUTE-WEB ASMR White Noise Web Application (Step 5 - Custom Input Timer)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
- * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 4' 비즈니스 로직을 담당합니다.
- * 기존의 번잡했던 개별 재생 및 음소거 버튼들을 단 하나의 [ON/OFF] 토글 스위치로 통합하여 
- * UI 시각적 명료성을 확보했으며, 편안한 수면 및 휴식을 위한 [페이드아웃 타이머] 기능을 구현했습니다.
+ * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 5' 비즈니스 로직을 담당합니다.
+ * 기존의 고정 시간 버튼 방식 타이머를 개선하여 사용자가 직접 원하는 '분(Minute)' 단위를 
+ * 입력하여 예약 정지할 수 있는 '사용자 직접 입력 방식 타이머'를 구현했습니다.
  * 
  * 주요 기능:
  * 1. 무료 라이센스 및 CORS 허용 고안정성 GitHub Raw MP3 음원 3개 관리
  * 2. 각 오디오 객체 초기화, 무한 반복(loop) 및 초기 볼륨(0.5) 설정
  * 3. 개별 볼륨 슬라이더 조절 시 실시간 오디오 볼륨 크기 동기화
- * 4. [New] 통합 ON/OFF 스위치: 유저가 켜고 끄는 직관적인 단일 버튼 제어 (기존 슬라이더 볼륨 값 완전 유지)
- * 5. [New] 오디오 카운트다운 타이머: 안 함 / 1분 / 5분 / 10분 설정 및 실시간 남은 시간 표시
- * 6. [New] 10초 페이드아웃(Fade-out) 효과: 타이머 종료 10초 전부터 전체 사운드가 선형적으로 서서히 감소하여 소리가 뚝 끊기는 불쾌감 방지
+ * 4. 통합 ON/OFF 스위치: 유저가 켜고 끄는 직관적인 단일 버튼 제어 (기존 슬라이더 볼륨 값 완전 유지)
+ * 5. [New] 사용자 직접 입력 타이머: 유효성 검사(빈 값, 0 이하 수 제한)를 적용한 자유 시간 타이머 구동
+ * 6. [New] 타이머 구동 중 안전 잠금: 카운트다운 도중 입력 필드와 시작 버튼을 비활성화(disabled)하여 오작동 차단
+ * 7. [New] 타이머 취소 기능: 소리는 유지한 채 카운트다운을 즉시 멈추고 제어창을 다시 활성화
+ * 8. 페이드아웃(Fade-out) 연동: 커스텀 타이머 종료 10초 전부터 전체 사운드가 선형적으로 감쇄되어 자동 정지
  */
 
 // ==========================================================================
@@ -41,7 +43,7 @@ const asmrSounds = [
     audioInstance: null,
     status: '준비 대기 중',
     volume: 0.5,
-    isPlaying: false // ON/OFF 통합 제어를 위한 상태 (요구사항 1-1, 3-1)
+    isPlaying: false
   },
   {
     id: 'campfire',
@@ -63,7 +65,7 @@ const asmrSounds = [
   }
 ];
 
-// 타이머 관련 제어 변수들 (요구사항 2, 3-2, 3-3)
+// 타이머 관련 제어 변수들
 let timerSecondsRemaining = 0; // 남은 전체 초
 let countdownIntervalId = null; // 카운트다운 타이머 인터벌 ID
 let isFadingOut = false; // 현재 페이드아웃 감쇄 동작이 가동 중인지 여부
@@ -125,7 +127,7 @@ function renderStatus() {
       labelElement.setAttribute('data-status', sound.status);
     }
 
-    // 2. 통합 ON/OFF 스위치 버튼 텍스트 및 클래스 갱신 (요구사항 1-1, 3-1)
+    // 2. 통합 ON/OFF 스위치 버튼 텍스트 및 클래스 갱신
     const switchBtn = document.getElementById(`btn-switch-${sound.id}`);
     if (switchBtn) {
       switchBtn.textContent = sound.isPlaying ? 'ON' : 'OFF';
@@ -141,7 +143,7 @@ function renderStatus() {
 }
 
 // ==========================================================================
-// 4. 오디오 제어 핵심 함수 (Step 4 통합 토글 개편)
+// 4. 오디오 제어 핵심 함수
 // ==========================================================================
 
 /**
@@ -159,7 +161,7 @@ function playAllSounds() {
     
     if (!audio) return;
 
-    // 슬라이더에 세팅되어 있는 기존 볼륨 크기 그대로 소리 세팅 (요구사항 3-1)
+    // 슬라이더에 세팅되어 있는 기존 볼륨 크기 그대로 소리 세팅
     audio.volume = sound.volume;
 
     audio.play()
@@ -203,7 +205,7 @@ function stopAllSounds() {
 }
 
 /**
- * 특정 단일 사운드의 [ON/OFF] 토글 상태를 전환합니다. (요구사항 3-1)
+ * 특정 단일 사운드의 [ON/OFF] 토글 상태를 전환합니다.
  * 볼륨 슬라이더 값은 엄격하게 유지한 채 해당 사운드만 재생하거나 정지시킵니다.
  * 
  * @param {string} soundId - 대상 사운드 ID
@@ -214,7 +216,7 @@ function toggleSoundSwitch(soundId) {
 
   const audio = sound.audioInstance;
 
-  // 타이머가 동작하여 감쇠가 이루어지던 중 토글 스위치 변경 시 원격 볼륨 복구
+  // 타이머가 동작하여 감쇄가 이루어지던 중 토글 스위치 변경 시 원격 볼륨 복구
   if (isFadingOut) {
     resetFadeOutVolume();
   }
@@ -256,7 +258,7 @@ function updateVolume(soundId, newVolume) {
   if (sound) {
     sound.volume = newVolume;
     
-    // 타이머 페이드아웃 감쇠 진행 중이 아닐 때만 실제 오디오 객체 볼륨을 동기화
+    // 타이머 페이드아웃 감쇄 진행 중이 아닐 때만 실제 오디오 객체 볼륨을 동기화
     if (sound.audioInstance && !isFadingOut) {
       sound.audioInstance.volume = newVolume;
     }
@@ -264,55 +266,126 @@ function updateVolume(soundId, newVolume) {
 }
 
 // ==========================================================================
-// 5. 페이드아웃 오디오 타이머 로직 (Step 4 핵심 기능 추가)
+// 5. 직접 입력 방식 오디오 타이머 로직 (Step 5 변경 사항)
 // ==========================================================================
 
 /**
- * 타이머 카운트다운을 가동하는 함수입니다. (요구사항 3-2)
- * 기존 작동하던 모든 타이머 인터벌을 깨끗이 청소하고 지정한 시간으로 카운트다운을 시작합니다.
- * 
- * @param {number} minutes - 설정할 타이머 분 단위 시간 (0 이면 타이머 끔)
+ * 사용자가 입력한 사용자 지정 분 단위를 받아 타이머를 시작하는 함수입니다. (요구사항 2)
+ * 빈 값이거나 0 이하의 비정상적인 정수 값일 경우의 예외 처리가 가동됩니다.
  */
-function startAudioTimer(minutes) {
-  // 1. 기존 동작 중이던 타이머 및 페이드아웃 상태 초기화
-  clearAllIntervals();
-  resetFadeOutVolume();
+function handleStartTimer() {
+  const timerInput = document.getElementById('timer-input');
+  if (!timerInput) return;
 
-  if (minutes === 0) {
-    updateTimerDisplay('없음');
-    console.log('[타이머] 타이머 기능이 비활성화되었습니다.');
+  // 1. 입력된 값 읽기 및 공백 제거
+  const valueString = timerInput.value.trim();
+
+  // 2. 예외 처리: 빈 값이거나 숫자가 아닌 경우 거름 (요구사항 2-1)
+  if (valueString === '') {
+    alert('시간(분)을 입력해 주세요!');
     return;
   }
 
-  // 2. 남은 시간 초 단위 환산 (테스트 및 기능 검증용)
+  const minutes = parseInt(valueString, 10);
+
+  // 3. 예외 처리: 0 이하의 값 또는 정상 숫자가 아닌 경우 가동 제한 (요구사항 2-1)
+  if (isNaN(minutes) || minutes <= 0) {
+    alert('1분 이상의 올바른 숫자를 입력해 주세요!');
+    timerInput.value = '';
+    return;
+  }
+
+  // 4. 타이머 기능 가동
+  startAudioTimer(minutes);
+}
+
+/**
+ * 카운트다운 타이머 인터벌을 등록하고 UI 통제를 적용합니다. (요구사항 2)
+ * 
+ * @param {number} minutes - 구동할 분 단위 시간
+ */
+function startAudioTimer(minutes) {
+  // 1. 기존 가동되던 인터벌 청소 및 볼륨 복구
+  clearAllIntervals();
+  resetFadeOutVolume();
+
+  // 2. 입력 제어창 및 구동 버튼 실시간 비활성화 (요구사항 2-2)
+  setTimerControlsDisabled(true);
+
+  // 3. 남은 시간 초 단위 환산 및 저장
   timerSecondsRemaining = minutes * 60;
   updateTimerDisplay(formatTime(timerSecondsRemaining));
-  console.log(`[타이머] ${minutes}분 타이머가 시작되었습니다.`);
+  console.log(`[타이머 시작] 사용자가 ${minutes}분 취침 예약을 설정했습니다.`);
 
-  // 3. 1초마다 카운트다운을 수행하는 타이머 인터벌 등록
+  // 4. 1초마다 반응하는 카운트다운 가동
   countdownIntervalId = setInterval(() => {
     timerSecondsRemaining--;
 
-    // A. 남은 시간 텍스트 업데이트
+    // A. 남은 시간 실시간 출력 갱신
     updateTimerDisplay(formatTime(timerSecondsRemaining));
 
-    // B. 페이드아웃 동작 감지: 타이머 종료 마지막 10초 전부터 작동 (요구사항 3-3)
+    // B. 마지막 10초 선형 감쇄 페이드아웃 효과 (요구사항 2-4)
     if (timerSecondsRemaining <= 10 && timerSecondsRemaining > 0) {
       applyFadeOutEffect(timerSecondsRemaining);
     }
 
-    // C. 타이머 시간 완료 시
+    // C. 카운트다운 시간이 완료된 경우
     if (timerSecondsRemaining <= 0) {
-      console.log('[타이머] 설정된 시간이 완료되어 모든 소리가 자동으로 정지됩니다.');
+      console.log('[타이머 종료] 예약 시간이 완료되어 백색소음을 전체 정지합니다.');
       clearAllIntervals();
-      stopAllSounds(); // 모든 오디오 일시정지 (요구사항 3-3)
+      stopAllSounds(); // 전체 오디오 일시정지
+      
+      // 제어 요소 활성화 복원 및 시간 완료 출력
+      setTimerControlsDisabled(false);
       updateTimerDisplay('완료');
     }
   }, 1000);
 }
 
 /**
- * 타이머 종료 전 마지막 10초 동안 선형적으로 볼륨을 점차 낮추는 페이드아웃 감쇠 함수입니다. (요구사항 3-3)
+ * [타이머 취소] 버튼 클릭 시 동작하는 처리기입니다. (요구사항 2-3)
+ * 소리는 전혀 정지시키지 않은 채, 타이머 인터벌만 즉시 멈추고 
+ * 깎여있던 페이드아웃 볼륨을 원상태로 되돌린 뒤 입력창을 초기화 및 활성화합니다.
+ */
+function handleCancelTimer() {
+  // 1. 카운트다운 인터벌 소거 (음원 재생은 그대로 유지)
+  clearAllIntervals();
+
+  // 2. 페이드아웃에 의해 작아진 볼륨을 원래 지정 볼륨 상태로 즉각 복구 (요구사항 2-3)
+  resetFadeOutVolume();
+
+  // 3. 입력 필드 및 시작 단추 활성화 원상복귀 (요구사항 2-3)
+  setTimerControlsDisabled(false);
+
+  // 4. 입력창 값 및 잔여 시간 표시 라벨 초기화 (요구사항 2-3)
+  const timerInput = document.getElementById('timer-input');
+  if (timerInput) {
+    timerInput.value = '';
+  }
+  updateTimerDisplay('없음');
+
+  console.log('[타이머 취소] 사용자가 취침 예약을 취소했습니다. 재생 상태는 온전히 유지됩니다.');
+}
+
+/**
+ * 타이머 조작 입력 요소들의 비활성화/활성화 상태를 제어하는 함수입니다. (요구사항 2-2)
+ * 
+ * @param {boolean} disabled - 비활성화 적용 여부 (true: 잠금, false: 해제)
+ */
+function setTimerControlsDisabled(disabled) {
+  const timerInput = document.getElementById('timer-input');
+  const timerStartBtn = document.getElementById('btn-timer-start');
+
+  if (timerInput) {
+    timerInput.disabled = disabled;
+  }
+  if (timerStartBtn) {
+    timerStartBtn.disabled = disabled;
+  }
+}
+
+/**
+ * 타이머 종료 전 마지막 10초 동안 선형적으로 볼륨을 점차 낮추는 페이드아웃 감쇠 함수입니다.
  * 
  * @param {number} secondsLeft - 남은 초 단위 시간 (1~10)
  */
@@ -322,7 +395,6 @@ function applyFadeOutEffect(secondsLeft) {
   asmrSounds.forEach((sound) => {
     const audio = sound.audioInstance;
     if (audio && sound.isPlaying) {
-      // 10초 남았을 때 100%, 9초 남았을 때 90%, ..., 1초 남았을 때 10% 비율로 볼륨을 유저 설정 슬라이더 볼륨에서 선형 감쇄
       const fadeRatio = secondsLeft / 10;
       const targetVolume = sound.volume * fadeRatio;
       
@@ -342,7 +414,7 @@ function resetFadeOutVolume() {
   asmrSounds.forEach((sound) => {
     const audio = sound.audioInstance;
     if (audio) {
-      audio.volume = sound.volume; // 유저 설정 볼륨 상태로 완전 롤백
+      audio.volume = sound.volume; // 원래 볼륨으로 복원
     }
   });
 }
@@ -367,7 +439,6 @@ function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   
-  // 두 자리 숫자로 패딩
   const paddedMinutes = String(minutes).padStart(2, '0');
   const paddedSeconds = String(seconds).padStart(2, '0');
   
@@ -417,7 +488,7 @@ function setupEventListeners() {
       });
     }
 
-    // B. 통합 [ON/OFF] 토글 스위치 버튼 (요구사항 1-1, 3-1)
+    // B. 통합 [ON/OFF] 토글 스위치 버튼
     const switchButton = document.getElementById(`btn-switch-${sound.id}`);
     if (switchButton) {
       switchButton.addEventListener('click', () => {
@@ -426,23 +497,15 @@ function setupEventListeners() {
     }
   });
 
-  // 3. 타이머 제어용 버튼 이벤트 등록 (요구사항 2, 3-2)
-  const btnTimerOff = document.getElementById('btn-timer-off');
-  const btnTimer1m = document.getElementById('btn-timer-1m');
-  const btnTimer5m = document.getElementById('btn-timer-5m');
-  const btnTimer10m = document.getElementById('btn-timer-10m');
+  // 3. 직접 입력 방식 타이머 제어용 버튼 이벤트 등록 (요구사항 1-1, 2)
+  const timerStartBtn = document.getElementById('btn-timer-start');
+  const timerCancelBtn = document.getElementById('btn-timer-cancel');
 
-  if (btnTimerOff) {
-    btnTimerOff.addEventListener('click', () => startAudioTimer(0));
+  if (timerStartBtn) {
+    timerStartBtn.addEventListener('click', handleStartTimer);
   }
-  if (btnTimer1m) {
-    btnTimer1m.addEventListener('click', () => startAudioTimer(1)); // 테스트를 위한 1분
-  }
-  if (btnTimer5m) {
-    btnTimer5m.addEventListener('click', () => startAudioTimer(5)); // 5분
-  }
-  if (btnTimer10m) {
-    btnTimer10m.addEventListener('click', () => startAudioTimer(10)); // 10분
+  if (timerCancelBtn) {
+    timerCancelBtn.addEventListener('click', handleCancelTimer);
   }
 }
 
