@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MUSE-WEB | 영감을 주는 크리에이티브 공간</title>
+  <meta name="description" content="MUSE-WEB은 창의성과 예술적 영감을 전하는 고품격 디지털 공간입니다. 음악 시뮬레이터와 크리에이티브 뮤즈 생성기를 통해 매일 새로운 영감을 발견해 보세요.">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background blobs -->
+  <div class="blob blob-pink" id="blob-1"></div>
+  <div class="blob blob-cyan" id="blob-2"></div>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="container nav-container">
+      <a href="#" class="logo" id="site-logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-purple)">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        MUSE<span>WEB</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#dashboard-section" id="nav-dashboard">대시보드</a></li>
+          <li><a href="https://github.com/ruberose/MUSE-WEB" target="_blank" rel="noopener noreferrer" id="nav-github">GitHub Repository</a></li>
+        </ul>
+      </nav>
+      <button class="btn-primary" id="connect-btn">시작하기</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Banner Section -->
+    <section class="hero" id="hero-banner">
+      <div class="hero-tagline" id="hero-tagline-text">Unleash Your Creative Power</div>
+      <h1 id="hero-main-title">예술과 코딩의 융합<br>새로운 <span>MUSE-WEB</span></h1>
+      <p id="hero-sub-text">MUSE-WEB은 단순한 코드가 아닙니다. 개발자와 아티스트 모두에게 영감을 불어넣는 세련되고 감각적인 상호작용 플랫폼입니다.</p>
+      <a href="#dashboard-section" class="btn-primary" id="explore-btn" style="text-decoration: none; display: inline-block;">영감 대시보드 탐색</a>
+    </section>
+
+    <!-- Interactive Dashboard Grid -->
+    <section class="dashboard" id="dashboard-section">
+      
+      <!-- Card 1: Interactive Audio Visualizer Simulator -->
+      <article class="glass-card player-container" id="visualizer-card">
+        <div>
+          <h2 style="font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 0.5rem;" id="player-card-title">MUSE Sound Wave</h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;" id="player-card-desc">코드에 리듬을 입히는 비주얼라이저 음악 시뮬레이터입니다.</p>
+        </div>
+
+        <!-- Visualizer Bars Container -->
+        <div class="visualizer" id="visualizer"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 600;" id="track-title">Synthetic Inspiration</h3>
+            <p style="color: var(--accent-cyan); font-size: 0.85rem; font-weight: 500;" id="track-artist">MUSE Synth</p>
+          </div>
+          
+          <!-- Player Controls -->
+          <div class="player-controls" id="player-controls-container">
+            <button class="control-btn" id="prev-btn" aria-label="이전 곡">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="19,20 9,12 19,4" />
+                <rect x="5" y="4" width="4" height="16" />
+              </svg>
+            </button>
+            <button class="control-btn play" id="play-btn" aria-label="재생/일시정지">
+              <span id="play-icon" style="display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="8,5 19,12 8,19" />
+                </svg>
+              </span>
+            </button>
+            <button class="control-btn" id="next-btn" aria-label="다음 곡">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5,4 15,12 5,20" />
+                <rect x="15" y="4" width="4" height="16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: Interactive Muse Quote Generator -->
+      <article class="glass-card muse-generator" id="generator-card">
+        <div>
+          <h2 style="font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 0.5rem;" id="generator-card-title">Daily Muse</h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;" id="generator-card-desc">창의적인 아이디어가 생각나지 않을 때 예술가들의 한마디를 들어보세요.</p>
+        </div>
+
+        <blockquote style="border: none; padding: 0; margin: 1.5rem 0;" id="quote-wrapper">
+          <p class="muse-quote" id="quote-text">“진정한 창조는 용기에서 비롯된다.”</p>
+          <cite class="author" id="quote-author" style="display: block; margin-top: 1rem; font-style: normal;">- 앙리 마티스</cite>
+        </blockquote>
+
+        <button class="btn-primary" id="generate-quote-btn" style="width: 100%; border-radius: 12px; padding: 1rem;">새로운 영감 받기</button>
+      </article>
+
+    </section>
+  </main>
+
+  <!-- Footer Section -->
+  <footer>
+    <div class="container">
+      <p id="copyright-text">&copy; 2026 MUSE-WEB. Crafted with passion by ruberose.</p>
+    </div>
+  </footer>
+
+  <!-- JS Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
