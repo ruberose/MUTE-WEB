@@ -1,16 +1,12 @@
 /**
  * ==========================================================================
- * MUTE-WEB ASMR White Noise Web Application (Step 5-2 - Master Volume Integration)
+ * MUTE-WEB ASMR White Noise Web Application (Step 6 - LocalStorage Settings Persistence)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
- * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 '마스터 볼륨 슬라이더 연동' 로직을 담당합니다.
- * 기존의 사용자 직접 지정 타이머, 10초 선형 페이드아웃, 개별 ON/OFF 토글 스위치 기능을 보존하면서,
- * 상단에 전체 소리의 크기를 한 번에 조절할 수 있는 마스터 볼륨(Master Volume) 제어기를 연동했습니다.
- * 
- * [수학적 볼륨 감쇠 공식]
- * 각 사운드의 실제 최종 오디오 출력 음량은 아래와 같이 계산됩니다:
- * 최종 출력 음량 = [개별 지정 볼륨] × [마스터 볼륨] × [타이머 페이드아웃 감쇠 비율 (동작 시)]
+ * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'LocalStorage를 활용한 유저 설정 저장 및 로드' 로직을 담당합니다.
+ * 기존의 마스터 볼륨, 타이머, 페이드아웃, 개별 스위치 제어 모듈을 완벽하게 수용하면서,
+ * 유저가 조절한 전체 마스터 볼륨, 개별 볼륨, 개별 ON/OFF 상태를 브라우저 로컬 저장소에 실시간 반영합니다.
  * 
  * 주요 기능:
  * 1. 무료 라이센스 및 CORS 허용 고안정성 GitHub Raw MP3 음원 3개 관리
@@ -18,12 +14,16 @@
  * 3. 개별 볼륨 슬라이더 조절 시 실시간 오디오 볼륨 크기 동기화 (마스터 볼륨 공식 대입)
  * 4. 통합 ON/OFF 스위치: 개별 재생/정지 제어
  * 5. 사용자 직접 입력 타이머: 유효성 검사 및 카운트다운 타이머 구동
- * 6. [New] 마스터 볼륨 슬라이더: 유저가 믹싱해 둔 개별 볼륨 비율을 훼손하지 않고 전체 볼륨을 실시간 비례 조절
- * 7. [New] 정밀 페이드아웃: 취침 예약 타이머의 10초 감쇄 동작이 마스터 볼륨이 곱해진 최종 볼륨선에서부터 선형적으로 0까지 감쇄되도록 제어 정밀도 개선
+ * 6. 마스터 볼륨 슬라이더: 비례 볼륨 조절
+ * 7. [New] LocalStorage 자동 저장 (`saveSettings`):
+ *    - 마스터 볼륨 변경, 개별 볼륨 조절, 개별 ON/OFF 토글, 전체 재생/정지 시 자동으로 최신 설정을 하나의 JSON 구조로 암묵적 자동 저장
+ * 8. [New] LocalStorage 자동 로드 (`loadSettings`):
+ *    - 페이지가 최초 실행될 때 저장 데이터를 체크하고 슬라이더 위치, 스위치 배지, 오디오 실제 음량 및 자동 재생(브라우저가 허용하는 한) 상태를 완벽 동기화 복원
+ *    - 저장 데이터 부재 시, 기본값(볼륨 0.5, 마스터 1.0, 모두 OFF 등)으로 가동하는 예외 안전망 적용
  */
 
 // ==========================================================================
-// 1. 전역 상태 관리 (마스터 볼륨 필드 추가)
+// 1. 전역 상태 관리
 // ==========================================================================
 
 /**
@@ -68,8 +68,11 @@ const asmrSounds = [
   }
 ];
 
-// 마스터 볼륨 및 타이머 제어용 전역 변수 (요구사항 2-1)
-let masterVolume = 1.0; // 마스터 볼륨 기본값 (0.0 ~ 1.0, 기본값: 1.0)
+// LocalStorage 키값 설정
+const STORAGE_KEY = 'mute_web_user_settings';
+
+// 마스터 볼륨 및 타이머 제어용 전역 변수
+let masterVolume = 1.0; // 마스터 볼륨 기본값
 let timerSecondsRemaining = 0; // 남은 전체 초
 let countdownIntervalId = null; // 카운트다운 타이머 인터벌 ID
 let isFadingOut = false; // 현재 페이드아웃 감쇄 동작이 가동 중인지 여부
@@ -83,19 +86,11 @@ let isFadingOut = false; // 현재 페이드아웃 감쇄 동작이 가동 중�
  */
 function initializeAudioSources() {
   asmrSounds.forEach((sound) => {
-    // 1. 오디오 객체 동적 생성 및 소스 연결
     const audio = new Audio(sound.url);
-    
-    // 2. 백색소음을 위한 무한 반복 재생 활성화
     audio.loop = true;
-    
-    // 3. 현재 저장된 [개별 볼륨 × 마스터 볼륨] 최종 볼륨으로 오디오 볼륨 설정 (요구사항 2-2)
     audio.volume = getCalculatedVolume(sound);
-
-    // 4. 오디오 인스턴스 전역 객체에 매핑
     sound.audioInstance = audio;
 
-    // 5. 오디오 로딩 상태 이벤트 추적
     audio.addEventListener('canplaythrough', () => {
       if (sound.status === '준비 대기 중') {
         sound.status = '준비 완료';
@@ -103,7 +98,6 @@ function initializeAudioSources() {
       }
     });
 
-    // 6. 에러 발생 시 처리
     audio.addEventListener('error', (e) => {
       console.error(`${sound.name} 로드 에러:`, e);
       sound.status = '로드 실패';
@@ -111,12 +105,119 @@ function initializeAudioSources() {
     });
   });
 
-  // 최초 1회 화면 갱신
   renderStatus();
 }
 
 // ==========================================================================
-// 3. 볼륨 연산 엔진 함수 (요구사항 2-2, 2-5)
+// 3. LocalStorage 유저 설정 저장 및 로드 모듈 (Step 6 핵심 요구사항)
+// ==========================================================================
+
+/**
+ * [LocalStorage 설정 자동 저장 함수] (요구사항 1-1)
+ * 유저가 볼륨을 조정하거나 스위치를 건드릴 때마다, 
+ * 마스터 볼륨과 개별 오디오들의 볼륨 및 ON/OFF 상태를 직렬화하여 브라우저에 비동기식 반영합니다.
+ */
+function saveSettings() {
+  try {
+    // 저장하기 위한 JSON 데이터 패키지 빌드
+    const userSettings = {
+      masterVolume: masterVolume,
+      sounds: asmrSounds.map((sound) => ({
+        id: sound.id,
+        volume: sound.volume,
+        isPlaying: sound.isPlaying
+      }))
+    };
+
+    // 로컬 스토리지에 문자열로 직렬화하여 저장
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userSettings));
+    console.log('[설정 자동 저장] 유저의 사운드 설정 상태가 성공적으로 스토리지에 백업되었습니다.');
+  } catch (error) {
+    console.error('[설정 저장 실패] LocalStorage에 접근할 수 없습니다:', error);
+  }
+}
+
+/**
+ * [LocalStorage 설정 자동 로드 및 상태 복원 함수] (요구사항 1-2)
+ * 페이지가 처음 가동될 때 로컬 저장소에 백업해 두었던 유저 설정 데이터를 불러옵니다.
+ * 데이터가 존재하면 슬라이더 위치, 스위치 배지 상태, 오디오 실제 볼륨을 완벽하게 강제 복구(동기화)합니다.
+ * 데이터가 없으면 기본값으로 구동하는 예외 처리 방어망이 내장되어 있습니다.
+ */
+function loadSettings() {
+  try {
+    const rawData = localStorage.getItem(STORAGE_KEY);
+    
+    // 예외 처리: 만약 저장된 유저 데이터가 존재하지 않는다면 복원을 생략하고 기본값 유지 (요구사항 1-4)
+    if (!rawData) {
+      console.log('[설정 로드] 저장된 이전 유저 설정 데이터가 존재하지 않아 기본값으로 초기 구동을 유지합니다.');
+      return;
+    }
+
+    // JSON 객체로 파싱
+    const savedSettings = JSON.parse(rawData);
+    console.log('[설정 로드 성공] 이전 유저 세팅을 발견하여 복원 프로세스를 가동합니다:', savedSettings);
+
+    // 1. 마스터 볼륨 상태 복원 및 HTML 마스터 슬라이더 위치 동기화 (요구사항 1-3)
+    if (typeof savedSettings.masterVolume === 'number') {
+      masterVolume = savedSettings.masterVolume;
+      const masterSlider = document.getElementById('master-volume');
+      if (masterSlider) {
+        masterSlider.value = masterVolume;
+      }
+    }
+
+    // 2. 개별 오디오 설정 복원 및 HTML 엘리먼트 위치/텍스트 강제 동기화 (요구사항 1-3)
+    if (Array.isArray(savedSettings.sounds)) {
+      savedSettings.sounds.forEach((savedSound) => {
+        // 전역 상태에 매핑되는 사운드 객체 탐색
+        const sound = asmrSounds.find((s) => s.id === savedSound.id);
+        
+        if (sound) {
+          // A. 개별 지정 볼륨 및 플레이 상태 복원
+          sound.volume = savedSound.volume;
+          sound.isPlaying = savedSound.isPlaying;
+
+          // B. HTML 개별 슬라이더 요소의 위치 강제 동기화
+          const sliderElement = document.getElementById(`volume-${sound.id}`);
+          if (sliderElement) {
+            sliderElement.value = sound.volume;
+          }
+
+          // C. 실제 HTML5 Audio 인스턴스 볼륨 배율 즉각 재연산 동기화
+          if (sound.audioInstance) {
+            sound.audioInstance.volume = getCalculatedVolume(sound);
+
+            // D. 만약 이전 상태가 ON(isPlaying = true)이었다면 재생 시도 (브라우저 자율 허용 폭 반영)
+            if (sound.isPlaying) {
+              sound.audioInstance.play()
+                .then(() => {
+                  sound.status = '재생 중';
+                  renderStatus();
+                })
+                .catch((autoplayError) => {
+                  // 브라우저 자동 재생 방지 정책으로 막히더라도 상태는 ON을 유지하고, 대기 안내
+                  console.warn(`[자동재생 제한] 브라우저 보안 정책에 의해 ${sound.name}의 자동 재생이 대기 상태입니다. (유저 액션 시 재생)`);
+                  sound.status = '준비 완료'; 
+                  renderStatus();
+                });
+            } else {
+              sound.status = '준비 완료';
+            }
+          }
+        }
+      });
+    }
+
+    // 동기화 완료 후 화면 상태 갱신
+    renderStatus();
+    console.log('[설정 복원 완료] 모든 슬라이더 위치 및 음소거/스위치 배지가 실시간 동기화되었습니다.');
+  } catch (error) {
+    console.error('[설정 로드 실패] 데이터를 읽어오는 중 에러가 발생하여 기본값으로 구동합니다:', error);
+  }
+}
+
+// ==========================================================================
+// 4. 볼륨 연산 엔진 함수
 // ==========================================================================
 
 /**
@@ -129,15 +230,11 @@ function initializeAudioSources() {
 function getCalculatedVolume(sound) {
   let fadeRatio = 1.0;
 
-  // 타이머 종료 마지막 10초 동안 선형 페이드아웃 적용
   if (isFadingOut) {
     fadeRatio = Math.max(0, Math.min(1, timerSecondsRemaining / 10));
   }
 
-  // 최종 수학적 계산: 개별 슬라이더 값 * 마스터 볼륨 값 * 페이드아웃 비율
   const targetVolume = sound.volume * masterVolume * fadeRatio;
-
-  // HTML5 Audio는 0.0 ~ 1.0 사이 값만 허용하므로 안전 장치 랩핑
   return Math.max(0, Math.min(1, targetVolume));
 }
 
@@ -154,7 +251,7 @@ function syncAllAudioVolumes() {
 }
 
 // ==========================================================================
-// 4. UI 렌더링 함수
+// 5. UI 렌더링 함수
 // ==========================================================================
 
 /**
@@ -184,7 +281,7 @@ function renderStatus() {
 }
 
 // ==========================================================================
-// 5. 오디오 제어 핵심 함수
+// 6. 오디오 제어 핵심 함수
 // ==========================================================================
 
 /**
@@ -201,7 +298,6 @@ function playAllSounds() {
     
     if (!audio) return;
 
-    // 재생 전 최종 수학적 공식 볼륨 동기화 (개별 볼륨 * 마스터 볼륨)
     audio.volume = getCalculatedVolume(sound);
 
     audio.play()
@@ -209,6 +305,7 @@ function playAllSounds() {
         sound.status = '재생 중';
         sound.isPlaying = true;
         renderStatus();
+        saveSettings(); // 설정 변경 자동 백업 (요구사항 1-1)
       })
       .catch((error) => {
         console.error(`${sound.name} 재생 시작 실패:`, error);
@@ -228,20 +325,15 @@ function stopAllSounds() {
     
     if (!audio) return;
 
-    // 1. 오디오 재생 정지
     audio.pause();
-    
-    // 2. 재생 시점 초기화
     audio.currentTime = 0;
-    
-    // 3. 상태 플래그 초기화
     sound.isPlaying = false;
     sound.status = '정지됨';
   });
   
-  // 페이드아웃 상태 및 볼륨 초기 복원 가동
   resetFadeOutVolume();
   renderStatus();
+  saveSettings(); // 설정 변경 자동 백업 (요구사항 1-1)
 }
 
 /**
@@ -261,12 +353,11 @@ function toggleSoundSwitch(soundId) {
   }
 
   if (sound.isPlaying) {
-    // ON -> OFF (일시정지 처리)
     audio.pause();
     sound.isPlaying = false;
     sound.status = '정지됨';
+    saveSettings(); // 스위치 해제 시 저장 (요구사항 1-1)
   } else {
-    // OFF -> ON (재생 처리, 슬라이더 볼륨에 마스터 볼륨 배율 곱하여 대입)
     audio.volume = getCalculatedVolume(sound); 
     
     audio.play()
@@ -274,6 +365,7 @@ function toggleSoundSwitch(soundId) {
         sound.isPlaying = true;
         sound.status = '재생 중';
         renderStatus();
+        saveSettings(); // 스위치 켬 시 저장 (요구사항 1-1)
       })
       .catch((err) => {
         console.error(`${sound.name} 개별 재생 실패:`, err);
@@ -287,7 +379,6 @@ function toggleSoundSwitch(soundId) {
 
 /**
  * 특정 오디오 소스의 슬라이더 볼륨 크기를 실시간 동기화합니다.
- * 개별 슬라이더를 조절할 때도 항상 마스터 볼륨 값이 곱해진 최종 연산값이 적용됩니다. (요구사항 2-4)
  * 
  * @param {string} soundId - 대상 사운드 ID
  * @param {number} newVolume - 변경할 볼륨 값 (0.0 ~ 1.0)
@@ -296,33 +387,29 @@ function updateVolume(soundId, newVolume) {
   const sound = asmrSounds.find(s => s.id === soundId);
   
   if (sound) {
-    // 1. 개별 기본 볼륨 상태 업데이트
     sound.volume = newVolume;
     
-    // 2. 오디오 인프라의 실제 출력 볼륨 동기화 (공식 적용)
     if (sound.audioInstance) {
       sound.audioInstance.volume = getCalculatedVolume(sound);
     }
+    
+    saveSettings(); // 개별 볼륨 조정 시 실시간 자동 저장 (요구사항 1-1)
   }
 }
 
 /**
- * 유저가 마스터 볼륨을 제어할 때 동작하는 실시간 조절 함수입니다. (요구사항 2-3)
+ * 유저가 마스터 볼륨을 제어할 때 동작하는 실시간 조절 함수입니다.
  * 
  * @param {number} newMasterVolume - 변경할 마스터 볼륨 값 (0.0 ~ 1.0)
  */
 function updateMasterVolume(newMasterVolume) {
-  // 1. 전역 마스터 볼륨 변수 값 저장
   masterVolume = newMasterVolume;
-
-  // 2. 공식에 맞추어 모든 작동 중인 오디오 볼륨을 일시에 동기화 수행
   syncAllAudioVolumes();
-
-  console.log(`[마스터 볼륨] 전체 오디오 크기가 ${Math.round(newMasterVolume * 100)}% 배율로 통합 조정되었습니다.`);
+  saveSettings(); // 마스터 볼륨 조정 시 실시간 자동 저장 (요구사항 1-1)
 }
 
 // ==========================================================================
-// 6. 직접 입력 방식 오디오 타이머 로직
+// 7. 직접 입력 방식 오디오 타이머 로직
 // ==========================================================================
 
 /**
@@ -370,7 +457,6 @@ function startAudioTimer(minutes) {
 
     updateTimerDisplay(formatTime(timerSecondsRemaining));
 
-    // 마지막 10초 선형 감쇄 페이드아웃 효과 (요구사항 2-5)
     if (timerSecondsRemaining <= 10 && timerSecondsRemaining > 0) {
       applyFadeOutEffect();
     }
@@ -421,11 +507,10 @@ function setTimerControlsDisabled(disabled) {
 
 /**
  * 타이머 종료 전 마지막 10초 동안 선형적으로 볼륨을 점차 낮추는 페이드아웃 감쇠 함수입니다.
- * 마스터 볼륨과 개별 볼륨이 적용된 최종 실제 출력값 기준으로 부드럽게 0으로 수렴합니다. (요구사항 2-5)
  */
 function applyFadeOutEffect() {
   isFadingOut = true;
-  syncAllAudioVolumes(); // getCalculatedVolume 연산이 내부에서 자동으로 감쇄 비율을 적용함
+  syncAllAudioVolumes();
 }
 
 /**
@@ -434,7 +519,7 @@ function applyFadeOutEffect() {
  */
 function resetFadeOutVolume() {
   isFadingOut = false;
-  syncAllAudioVolumes(); // getCalculatedVolume을 통해 [개별 볼륨 * 마스터 볼륨] 상태로 자동 롤백
+  syncAllAudioVolumes();
 }
 
 /**
@@ -471,14 +556,13 @@ function updateTimerDisplay(text) {
 }
 
 // ==========================================================================
-// 7. 이벤트 바인딩 및 어플리케이션 진입점
+// 8. 이벤트 바인딩 및 어플리케이션 진입점
 // ==========================================================================
 
 /**
  * 버튼 및 슬라이더, 타이머 등과 비즈니스 제어 로직 간의 이벤트 연동을 수행합니다.
  */
 function setupEventListeners() {
-  // 1. 전체 제어 상단 버튼 바인딩
   const playAllButton = document.getElementById('btn-play-all');
   const stopAllButton = document.getElementById('btn-stop-all');
 
@@ -490,7 +574,6 @@ function setupEventListeners() {
     stopAllButton.addEventListener('click', stopAllSounds);
   }
 
-  // 2. 마스터 볼륨 슬라이더 조절 이벤트 감지 등록 (요구사항 1-1, 2-3)
   const masterVolumeSlider = document.getElementById('master-volume');
   if (masterVolumeSlider) {
     masterVolumeSlider.addEventListener('input', (e) => {
@@ -499,9 +582,7 @@ function setupEventListeners() {
     });
   }
 
-  // 3. 각 사운드별 개별 엘리먼트(볼륨 슬라이더, ON/OFF 스위치) 이벤트 등록
   asmrSounds.forEach((sound) => {
-    // A. 볼륨 조절 슬라이더
     const sliderElement = document.getElementById(`volume-${sound.id}`);
     if (sliderElement) {
       sliderElement.addEventListener('input', (e) => {
@@ -510,7 +591,6 @@ function setupEventListeners() {
       });
     }
 
-    // B. 통합 [ON/OFF] 토글 스위치 버튼
     const switchButton = document.getElementById(`btn-switch-${sound.id}`);
     if (switchButton) {
       switchButton.addEventListener('click', () => {
@@ -519,7 +599,6 @@ function setupEventListeners() {
     }
   });
 
-  // 4. 직접 입력 방식 타이머 제어용 버튼 이벤트 등록
   const timerStartBtn = document.getElementById('btn-timer-start');
   const timerCancelBtn = document.getElementById('btn-timer-cancel');
 
@@ -531,8 +610,9 @@ function setupEventListeners() {
   }
 }
 
-// 문서 로드가 완료되면 오디오 초기화 및 이벤트 리스너 리얼타임 실행
+// 문서 로드가 완료되면 오디오 초기화, 유저 세팅 로드 및 이벤트 리스너 실행 (요구사항 1-2)
 document.addEventListener('DOMContentLoaded', () => {
-  initializeAudioSources();
-  setupEventListeners();
+  initializeAudioSources(); // 1. 오디오 객체들 메모리 가동
+  loadSettings();           // 2. LocalStorage에서 백업 데이터 확인 및 복구 동기화
+  setupEventListeners();    // 3. 브라우저 이벤트 바인딩 설정
 });
