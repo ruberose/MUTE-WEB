@@ -1,9 +1,9 @@
-# MUSE-WEB
+# MUTE-WEB
 
-MUSE-WEB 프로젝트에 오신 것을 환영합니다!
+MUTE-WEB 프로젝트에 오신 것을 환영합니다!
 
 ## 소개
-이 저장소는 **MUSE-WEB** 프로젝트의 웹 애플리케이션 소스 코드가 관리되는 곳입니다.
+이 저장소는 **MUTE-WEB** 프로젝트의 웹 애플리케이션 소스 코드가 관리되는 곳입니다.
 
 ## 시작하기
 
@@ -20,4 +20,4 @@ npm run dev
 ```
 
 ---
-*Created with ruberose's MUSE-WEB repository.*
+*Created with ruberose's MUTE-WEB repository.*

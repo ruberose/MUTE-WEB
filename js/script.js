@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * MUSE-WEB ASMR White Noise Web Application (Step 1 - Core Functionality)
+ * MUTE-WEB ASMR White Noise Web Application (Step 1 - Core Functionality)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
