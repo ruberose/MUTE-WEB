@@ -4,24 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 5-2 마스터볼륨)</title>
-  <meta name="description" content="MUTE-WEB의 마스터 볼륨 페이지입니다. 개별 오디오 지정 비율을 유지하면서 전체 음량을 실시간 조절하는 수학적 볼륨 공식을 기반으로 동작합니다.">
+  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 7 설정 서랍 및 광고)</title>
+  <meta name="description" content="MUTE-WEB의 Step 7 페이지입니다. 메인 화면은 고품격 비주얼 멍 타겟 공간으로 깨끗이 비우고, 300x250 애드센스 배너가 장착된 슬라이드 설정 서랍장을 탑재했습니다.">
   
   <!-- CSS 스타일시트 상대경로 참조 -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- 메인 레이아웃 컨테이너 -->
-  <main class="app-container" id="main-container">
+  <!-- ==========================================================================
+       영역 1: 메인 화면 (Main Arena Content)
+       ========================================================================== -->
+  <main class="main-arena" id="main-arena">
     
+    <!-- 우측 상단 설정 서랍 개폐 단추 (⚙️) (요구사항 1-1) -->
+    <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">⚙️ 사운드 조절 및 설정</button>
+
     <!-- 타이틀 영역 -->
     <header>
-      <h1 id="app-title">MUTE-WEB ASMR (Step 5-2)</h1>
-      <p class="description" id="app-description">전체 음량을 한 번에 제어하는 마스터 볼륨(Master Volume) 제어 기능이 추가된 검증 페이지입니다.</p>
+      <h1 id="app-title">MUTE-WEB ASMR</h1>
+      <p class="description" id="app-description">복잡한 설정은 숨겨두고, 비주얼과 소리에 깊이 몰입해 보세요.</p>
     </header>
 
-    <!-- 상단 제어 및 마스터 볼륨 영역 (요구사항 1) -->
+    <!-- 상단 제어 및 마스터 볼륨 영역 -->
     <section class="top-controls-wrapper" id="top-controls">
       <!-- 전체 재생 및 전체 정지 버튼 -->
       <div class="controls-container" id="player-controls">
@@ -29,61 +34,24 @@
         <button type="button" id="btn-stop-all">전체 정지</button>
       </div>
 
-      <!-- [New] 전체 음량을 조절하는 마스터 볼륨 슬라이더 구성 (요구사항 1) -->
+      <!-- 전체 음량을 조절하는 마스터 볼륨 슬라이더 구성 -->
       <div class="master-volume-container" id="master-volume-box">
         <label for="master-volume" class="master-volume-label" id="master-volume-label">🎚️ 마스터 볼륨</label>
         <input type="range" class="master-volume-slider" id="master-volume" min="0" max="1" step="0.01" value="1" aria-label="전체 마스터 볼륨 조절">
       </div>
     </section>
 
-    <!-- 오디오 목록 및 개별 제어판 레이아웃 -->
-    <section class="sounds-container" id="sounds-section">
-      <h2 style="font-size: 18px; margin-bottom: 15px; color: #34495e;">음원별 볼륨 및 동작 제어</h2>
-      
-      <ul class="sounds-list" id="sounds-list">
-        
-        <!-- 빗소리 제어 컴포넌트 -->
-        <li class="audio-control-item" id="item-rain">
-          <!-- 오디오 이름 및 이모지 라벨 -->
-          <span class="sound-label" id="label-rain">🌧️ 차분한 빗소리</span>
-          <!-- 개별 볼륨 슬라이더 -->
-          <input type="range" class="volume-slider" id="volume-rain" min="0" max="1" step="0.01" value="0.5" aria-label="빗소리 볼륨 조절">
-          <!-- 통합 ON/OFF 토글 스위치 버튼 -->
-          <button type="button" class="btn-toggle-switch" id="btn-switch-rain">OFF</button>
-          <!-- 오디오 실시간 작동 상태 표시 -->
-          <span class="sound-status" id="status-rain">준비 대기 중</span>
-        </li>
-        
-        <!-- 장작 소리 제어 컴포넌트 -->
-        <li class="audio-control-item" id="item-campfire">
-          <!-- 오디오 이름 및 이모지 라벨 -->
-          <span class="sound-label" id="label-campfire">🔥 따뜻한 장작 소리</span>
-          <!-- 개별 볼륨 슬라이더 -->
-          <input type="range" class="volume-slider" id="volume-campfire" min="0" max="1" step="0.01" value="0.5" aria-label="장작 소리 볼륨 조절">
-          <!-- 통합 ON/OFF 토글 스위치 버튼 -->
-          <button type="button" class="btn-toggle-switch" id="btn-switch-campfire">OFF</button>
-          <!-- 오디오 실시간 작동 상태 표시 -->
-          <span class="sound-status" id="status-campfire">준비 대기 중</span>
-        </li>
-        
-        <!-- 시냇물 소리 제어 컴포넌트 -->
-        <li class="audio-control-item" id="item-stream">
-          <!-- 오디오 이름 및 이모지 라벨 -->
-          <span class="sound-label" id="label-stream">🏞️ 맑은 시냇물 소리</span>
-          <!-- 개별 볼륨 슬라이더 -->
-          <input type="range" class="volume-slider" id="volume-stream" min="0" max="1" step="0.01" value="0.5" aria-label="시냇물 소리 볼륨 조절">
-          <!-- 통합 ON/OFF 토글 스위치 버튼 -->
-          <button type="button" class="btn-toggle-switch" id="btn-switch-stream">OFF</button>
-          <!-- 오디오 실시간 작동 상태 표시 -->
-          <span class="sound-status" id="status-stream">준비 대기 중</span>
-        </li>
-        
-      </ul>
+    <!-- [Step 7] 중앙 대형 비주얼 멍 타겟 공간 (요구사항 1-1) -->
+    <section class="visual-space" id="visual-space-zone">
+      <div style="text-align: center;">
+        <span style="font-size: 32px; display: block; margin-bottom: 10px;">🌊</span>
+        <span>마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
+      </div>
     </section>
 
     <!-- 오디오 페이드아웃 직접 지정 타이머 제어판 -->
     <section class="timer-container" id="timer-section">
-      <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머 (직접 지정)</h3>
+      <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머</h3>
       
       <!-- 수치 입력창, 시작 및 취소 단추 수평 배치 영역 -->
       <div class="timer-controls-row" id="timer-inputs-container">
@@ -102,6 +70,68 @@
     </section>
 
   </main>
+
+
+  <!-- ==========================================================================
+       영역 2: 설정 서랍 (Sidebar Drawer Content) - 요구사항 1-2
+       ========================================================================== -->
+  <aside class="settings-drawer" id="settings-drawer">
+    
+    <!-- 서랍장 상단 타이틀 및 닫기 버튼 -->
+    <div class="drawer-header" id="drawer-top">
+      <h2 class="drawer-title" id="drawer-heading">⚙️ 사운드 상세 믹서</h2>
+      <button type="button" class="btn-drawer-close" id="btn-drawer-close">✕ 닫기</button>
+    </div>
+
+    <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (서랍장 내부로 이동 완료) -->
+    <section class="sounds-container" id="sounds-section">
+      <ul class="sounds-list" id="sounds-list">
+        
+        <!-- 빗소리 제어 컴포넌트 -->
+        <li class="audio-control-item" id="item-rain">
+          <!-- 오디오 이름 및 이모지 라벨 -->
+          <span class="sound-label" id="label-rain">🌧️ 차분한 빗소리</span>
+          <!-- 슬라이더, 스위치, 뱃지 가로 배열용 행 컨테이너 -->
+          <div class="audio-control-row">
+            <input type="range" class="volume-slider" id="volume-rain" min="0" max="1" step="0.01" value="0.5" aria-label="빗소리 볼륨 조절">
+            <button type="button" class="btn-toggle-switch" id="btn-switch-rain">OFF</button>
+            <span class="sound-status" id="status-rain">준비 대기 중</span>
+          </div>
+        </li>
+        
+        <!-- 장작 소리 제어 컴포넌트 -->
+        <li class="audio-control-item" id="item-campfire">
+          <!-- 오디오 이름 및 이모지 라벨 -->
+          <span class="sound-label" id="label-campfire">🔥 따뜻한 장작 소리</span>
+          <!-- 슬라이더, 스위치, 뱃지 가로 배열용 행 컨테이너 -->
+          <div class="audio-control-row">
+            <input type="range" class="volume-slider" id="volume-campfire" min="0" max="1" step="0.01" value="0.5" aria-label="장작 소리 볼륨 조절">
+            <button type="button" class="btn-toggle-switch" id="btn-switch-campfire">OFF</button>
+            <span class="sound-status" id="status-campfire">준비 대기 중</span>
+          </div>
+        </li>
+        
+        <!-- 시냇물 소리 제어 컴포넌트 -->
+        <li class="audio-control-item" id="item-stream">
+          <!-- 오디오 이름 및 이모지 라벨 -->
+          <span class="sound-label" id="label-stream">🏞️ 맑은 시냇물 소리</span>
+          <!-- 슬라이더, 스위치, 뱃지 가로 배열용 행 컨테이너 -->
+          <div class="audio-control-row">
+            <input type="range" class="volume-slider" id="volume-stream" min="0" max="1" step="0.01" value="0.5" aria-label="시냇물 소리 볼륨 조절">
+            <button type="button" class="btn-toggle-switch" id="btn-switch-stream">OFF</button>
+            <span class="sound-status" id="status-stream">준비 대기 중</span>
+          </div>
+        </li>
+        
+      </ul>
+    </section>
+
+    <!-- [Step 7] 구글 애드센스 규격(300x250) 광고 배너 예정 영역 확보 (요구사항 1-2) -->
+    <div class="ad-banner-holder" style="width:300px; height:250px; background-color:#eee; margin:20px auto; text-align:center; line-height:250px; color:#666; border:1px solid #cbd5e1; border-radius:4px; font-weight:bold; font-size:12px;">
+      [구글 광고 배너 예정 영역 (300x250)]
+    </div>
+
+  </aside>
 
   <!-- 자바스크립트 모듈 상대경로 참조 -->
   <script src="js/script.js"></script>

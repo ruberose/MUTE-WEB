@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MUTE-WEB CSS (Step 5-2 - Layout, Master Volume, and Custom Timer Input)
+   MUTE-WEB CSS (Step 7 - Split Layout, Sidebar Drawer & Ad Banner Space)
    ========================================================================== */
 
 /* 브라우저 기본 폰트 및 배경색 설정 */
@@ -7,18 +7,22 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: #f7f9fa;
   color: #333333;
-  padding: 40px;
-  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
 }
 
-/* 전체 컨테이너 정렬 */
-.app-container {
+/* [Step 7] 메인 화면 레이아웃 (Main Arena Container) */
+.main-arena {
   max-width: 650px;
-  margin: 0 auto;
+  margin: 60px auto;
   background-color: #ffffff;
-  padding: 30px;
+  padding: 40px 30px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
 /* 제목 스타일 */
@@ -39,7 +43,7 @@ h1 {
 
 /* 상단 제어 버튼 및 마스터 볼륨 정렬을 위한 래퍼 */
 .top-controls-wrapper {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   padding-bottom: 25px;
   border-bottom: 1px dashed #e2e8f0;
 }
@@ -86,7 +90,7 @@ button {
   background-color: #c0392b;
 }
 
-/* [New] 마스터 볼륨 정렬 컨테이너 스타일 (요구사항 1) */
+/* 마스터 볼륨 정렬 컨테이너 스타일 */
 .master-volume-container {
   display: flex;
   justify-content: center;
@@ -112,114 +116,49 @@ button {
 /* 마스터 볼륨 조절 슬라이더 */
 .master-volume-slider {
   flex: 1;
-  height: 8px; /* 마스터 볼륨은 시각적 중요도를 위해 살짝 더 두껍게 */
+  height: 8px;
   cursor: pointer;
 }
 
-/* 리스트 및 슬라이더 영역 감싸는 컨테이너 */
-.sounds-container {
-  margin-top: 20px;
-  margin-bottom: 35px;
-}
-
-/* 리스트 기본 여백 초기화 */
-.sounds-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-/* 라벨, 슬라이더, 개별 ON/OFF 토글 스위치, 상태 표시 배지 정렬 */
-.audio-control-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 15px 20px;
-  border-bottom: 1px solid #ecf0f1;
-  font-size: 15px;
-  gap: 15px;
-}
-
-.audio-control-item:last-child {
-  border-bottom: none;
-}
-
-/* 사운드 이름 및 이모지 라벨 영역 */
-.sound-label {
-  flex: 1.2;
-  min-width: 140px;
-  font-weight: 500;
-  color: #34495e;
-}
-
-/* 볼륨 조절 슬라이더 영역 */
-.volume-slider {
-  flex: 2;
-  min-width: 150px;
-  height: 6px;
-  cursor: pointer;
-}
-
-/* 개별 ON/OFF 토글 스위치 버튼 스타일 */
-.btn-toggle-switch {
-  padding: 8px 16px;
+/* [Step 7] 우측 상단 설정 기어 버튼 스타일 (요구사항 1-1) */
+.btn-settings-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 14px;
   font-size: 13px;
   font-weight: bold;
-  border-radius: 20px;
-  border: 1px solid #bdc3c7;
-  background-color: #eceff1;
-  color: #7f8c8d;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  min-width: 65px;
-  text-align: center;
-}
-
-.btn-toggle-switch:hover {
-  background-color: #cfd8dc;
-}
-
-/* ON 상태 활성화 시 직관적이고 차분한 컬러 피드백 */
-.active-on {
-  background-color: #e8f8f0 !important;
-  border-color: #a3e4d7 !important;
-  color: #2ecc71 !important;
-  box-shadow: 0 1px 6px rgba(46, 204, 113, 0.15);
-}
-
-/* 작동 상태 표시 배지 */
-.sound-status {
-  min-width: 75px;
-  text-align: center;
-  font-weight: bold;
-  padding: 4px 8px;
+  background-color: #34495e;
+  color: #ffffff;
+  border: none;
   border-radius: 4px;
-  font-size: 13px;
-  background-color: #ecf0f1;
-  color: #7f8c8d;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-/* 재생 중 상태 전용 색상 */
-.sound-status[data-status="재생 중"] {
-  background-color: #e8f8f0;
-  color: #2ecc71;
+.btn-settings-toggle:hover {
+  background-color: #2c3e50;
 }
 
-/* 정지됨 상태 전용 색상 */
-.sound-status[data-status="정지됨"] {
-  background-color: #fde8e7;
-  color: #e74c3c;
-}
-
-/* 준비 완료 상태 전용 색상 */
-.sound-status[data-status="준비 완료"] {
-  background-color: #e8f4fd;
-  color: #3498db;
+/* [Step 7] 중앙 대형 비주얼 멍 타겟 공간 (요구사항 1-1) */
+.visual-space {
+  height: 220px;
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  margin: 25px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 500;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 /* 오디오 페이드아웃 커스텀 입력 타이머 영역 스타일 */
 .timer-container {
-  margin-top: 30px;
   padding: 20px;
   border-radius: 6px;
   background-color: #f8f9fa;
@@ -229,7 +168,7 @@ button {
 
 /* 타이머 제목 스타일 */
 .timer-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   color: #475569;
   margin-bottom: 15px;
@@ -242,7 +181,6 @@ button {
   align-items: center;
   gap: 10px;
   margin-bottom: 15px;
-  flex-wrap: wrap; /* 모바일 대응 래핑 */
 }
 
 /* 사용자가 분 단위를 입력하는 수치 입력창 스타일 */
@@ -258,10 +196,8 @@ button {
 
 .timer-input-field:focus {
   border-color: #94a3b8;
-  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.1);
 }
 
-/* 비활성화(disabled) 상태 시 입력 필드 시각 처리 */
 .timer-input-field:disabled {
   background-color: #e2e8f0;
   color: #94a3b8;
@@ -287,7 +223,6 @@ button {
   border-color: #94a3b8;
 }
 
-/* 타이머 시작 버튼 전용 스타일 */
 #btn-timer-start {
   background-color: #3498db;
   color: #ffffff;
@@ -298,7 +233,6 @@ button {
   background-color: #2980b9;
 }
 
-/* 시작 버튼 비활성화(disabled) 상태 시 시각 처리 */
 #btn-timer-start:disabled {
   background-color: #94a3b8;
   border-color: #cbd5e1;
@@ -306,7 +240,6 @@ button {
   cursor: not-allowed;
 }
 
-/* 타이머 취소 버튼 전용 스타일 */
 #btn-timer-cancel {
   background-color: #e2e8f0;
   color: #475569;
@@ -325,22 +258,181 @@ button {
   margin-top: 10px;
 }
 
-/* 반응형 예외 스타일: 가로폭이 매우 좁아질 때 가독성 확보 */
-@media (max-width: 600px) {
-  .audio-control-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+/* ==========================================================================
+   [Step 7] 설정 서랍장 영역 (Sidebar Drawer Styling) - 요구사항 1-2, 3
+   ========================================================================== */
+
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 360px; /* 서랍장 폭 고정 */
+  height: 100vh; /* 화면 꽉 차게 */
+  background-color: #ffffff;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 30px 20px;
+  box-sizing: border-box;
+  overflow-y: auto; /* 내용이 길어질 경우 스크롤 허용 */
+  
+  /* [Step 7] 평소에는 화면 오른쪽 밖으로 100% 밀어 숨김 처리 (요구사항 3) */
+  transform: translateX(100%);
+  
+  /* 부드럽게 스르륵 여닫히는 애니메이션 전환 기입 */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* [Step 7] ⚙️ 버튼 클릭에 의해 활성화 되었을 때 서랍장 출현 (요구사항 3) */
+.settings-drawer.active {
+  transform: translateX(0);
+}
+
+/* 서랍장 내부 헤더 정렬 */
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.drawer-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 0;
+}
+
+/* 서랍장 닫기 버튼 */
+.btn-drawer-close {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-drawer-close:hover {
+  background-color: #e2e8f0;
+}
+
+/* 서랍장 내부 음원 목록 리스트 초기화 */
+.sounds-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 40px 0; /* 광고 영역 확보를 위해 바닥 여백 추가 */
+}
+
+/* 라벨, 슬라이더, 개별 ON/OFF 토글 스위치, 상태 표시 배지 세로정렬 변환 */
+.audio-control-item {
+  display: flex;
+  flex-direction: column; /* 사이드바의 좁은 너비에 맞춰 세로 정렬로 가독성 극대화 */
+  align-items: stretch;
+  padding: 18px 10px;
+  border-bottom: 1px solid #ecf0f1;
+  font-size: 14px;
+  gap: 10px;
+}
+
+.audio-control-item:last-child {
+  border-bottom: none;
+}
+
+/* 사운드 이름 및 이모지 라벨 영역 */
+.sound-label {
+  font-weight: bold;
+  color: #34495e;
+  text-align: left;
+}
+
+/* 슬라이더와 제어 스위치, 뱃지를 한 행에 단정하게 가로 배치 */
+.audio-control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 볼륨 조절 슬라이더 영역 */
+.volume-slider {
+  flex: 1;
+  height: 6px;
+  cursor: pointer;
+}
+
+/* 개별 ON/OFF 토글 스위치 버튼 스타일 */
+.btn-toggle-switch {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 20px;
+  border: 1px solid #bdc3c7;
+  background-color: #eceff1;
+  color: #7f8c8d;
+  cursor: pointer;
+  min-width: 55px;
+  text-align: center;
+}
+
+/* ON 상태 활성화 시 직관적이고 차분한 컬러 피드백 */
+.active-on {
+  background-color: #e8f8f0 !important;
+  border-color: #a3e4d7 !important;
+  color: #2ecc71 !important;
+}
+
+/* 작동 상태 표시 배지 */
+.sound-status {
+  min-width: 65px;
+  text-align: center;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  background-color: #ecf0f1;
+  color: #7f8c8d;
+}
+
+/* 재생 중 상태 전용 색상 */
+.sound-status[data-status="재생 중"] {
+  background-color: #e8f8f0;
+  color: #2ecc71;
+}
+
+/* 정지됨 상태 전용 색상 */
+.sound-status[data-status="정지됨"] {
+  background-color: #fde8e7;
+  color: #e74c3c;
+}
+
+/* 준비 완료 상태 전용 색상 */
+.sound-status[data-status="준비 완료"] {
+  background-color: #e8f4fd;
+  color: #3498db;
+}
+
+/* 반응형 예외 스타일: 모바일 가로폭이 매우 좁아질 때 메인 화면 여백 조정 */
+@media (max-width: 700px) {
+  body {
+    padding: 10px;
   }
-  .sound-label, .volume-slider, .btn-toggle-switch, .sound-status {
-    width: 100%;
+  .main-arena {
+    margin: 40px auto;
+    padding: 25px 15px;
+  }
+  .btn-settings-toggle {
+    position: static;
+    display: block;
+    margin: 0 auto 20px auto;
     text-align: center;
-  }
-  .timer-controls-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .timer-input-field, .btn-timer-action {
     width: 100%;
+    box-sizing: border-box;
+  }
+  .settings-drawer {
+    width: 100%; /* 모바일에서는 서랍장을 전체 화면으로 확장 */
   }
 }

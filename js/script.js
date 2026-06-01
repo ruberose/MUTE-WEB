@@ -1,12 +1,12 @@
 /**
  * ==========================================================================
- * MUTE-WEB ASMR White Noise Web Application (Step 6 - LocalStorage Settings Persistence)
+ * MUTE-WEB ASMR White Noise Web Application (Step 7 - Sidebar Drawer & Ads)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
- * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'LocalStorage를 활용한 유저 설정 저장 및 로드' 로직을 담당합니다.
- * 기존의 마스터 볼륨, 타이머, 페이드아웃, 개별 스위치 제어 모듈을 완벽하게 수용하면서,
- * 유저가 조절한 전체 마스터 볼륨, 개별 볼륨, 개별 ON/OFF 상태를 브라우저 로컬 저장소에 실시간 반영합니다.
+ * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 7' 전체 비즈니스 엔진을 담당합니다.
+ * 기존의 마스터 볼륨 조절, 커스텀 취침 타이머, 10초 페이드아웃 및 LocalStorage 저장/로드 모듈을 
+ * 완벽히 계승하면서, 메인 화면을 정화하고 설정을 숨겨두는 '설정 서랍(Drawer)'의 개폐(Toggle) 엔진을 추가했습니다.
  * 
  * 주요 기능:
  * 1. 무료 라이센스 및 CORS 허용 고안정성 GitHub Raw MP3 음원 3개 관리
@@ -15,11 +15,11 @@
  * 4. 통합 ON/OFF 스위치: 개별 재생/정지 제어
  * 5. 사용자 직접 입력 타이머: 유효성 검사 및 카운트다운 타이머 구동
  * 6. 마스터 볼륨 슬라이더: 비례 볼륨 조절
- * 7. [New] LocalStorage 자동 저장 (`saveSettings`):
- *    - 마스터 볼륨 변경, 개별 볼륨 조절, 개별 ON/OFF 토글, 전체 재생/정지 시 자동으로 최신 설정을 하나의 JSON 구조로 암묵적 자동 저장
- * 8. [New] LocalStorage 자동 로드 (`loadSettings`):
- *    - 페이지가 최초 실행될 때 저장 데이터를 체크하고 슬라이더 위치, 스위치 배지, 오디오 실제 음량 및 자동 재생(브라우저가 허용하는 한) 상태를 완벽 동기화 복원
- *    - 저장 데이터 부재 시, 기본값(볼륨 0.5, 마스터 1.0, 모두 OFF 등)으로 가동하는 예외 안전망 적용
+ * 7. LocalStorage 설정 백업/로드 기능 탑재
+ * 8. [New] 설정 서랍(Sidebar Drawer) 제어 로직 (요구사항 2-1):
+ *    - 메인 화면 우측 상단 [⚙️] 버튼 클릭 시 서랍장에 'active' 클래스를 붙여 부드럽게 열기
+ *    - 서랍 내부의 [✕ 닫기] 버튼 클릭 시 서랍장을 닫아 메인 화면 몰입감 복구
+ *    - HTML의 위치 구조가 사이드바로 전부 변경되었음에도, 모든 오디오 볼륨 제어 및 스위치 바인딩이 100% 정상 연동 동작
  */
 
 // ==========================================================================
@@ -109,17 +109,16 @@ function initializeAudioSources() {
 }
 
 // ==========================================================================
-// 3. LocalStorage 유저 설정 저장 및 로드 모듈 (Step 6 핵심 요구사항)
+// 3. LocalStorage 유저 설정 저장 및 로드 모듈
 // ==========================================================================
 
 /**
- * [LocalStorage 설정 자동 저장 함수] (요구사항 1-1)
+ * [LocalStorage 설정 자동 저장 함수]
  * 유저가 볼륨을 조정하거나 스위치를 건드릴 때마다, 
  * 마스터 볼륨과 개별 오디오들의 볼륨 및 ON/OFF 상태를 직렬화하여 브라우저에 비동기식 반영합니다.
  */
 function saveSettings() {
   try {
-    // 저장하기 위한 JSON 데이터 패키지 빌드
     const userSettings = {
       masterVolume: masterVolume,
       sounds: asmrSounds.map((sound) => ({
@@ -129,7 +128,6 @@ function saveSettings() {
       }))
     };
 
-    // 로컬 스토리지에 문자열로 직렬화하여 저장
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userSettings));
     console.log('[설정 자동 저장] 유저의 사운드 설정 상태가 성공적으로 스토리지에 백업되었습니다.');
   } catch (error) {
@@ -138,26 +136,23 @@ function saveSettings() {
 }
 
 /**
- * [LocalStorage 설정 자동 로드 및 상태 복원 함수] (요구사항 1-2)
- * 페이지가 처음 가동될 때 로컬 저장소에 백업해 두었던 유저 설정 데이터를 불러옵니다.
+ * [LocalStorage 설정 자동 로드 및 상태 복원 함수]
+ * 페이지가 최초 실행될 때 로컬 저장소에 백업해 두었던 유저 설정 데이터를 불러옵니다.
  * 데이터가 존재하면 슬라이더 위치, 스위치 배지 상태, 오디오 실제 볼륨을 완벽하게 강제 복구(동기화)합니다.
- * 데이터가 없으면 기본값으로 구동하는 예외 처리 방어망이 내장되어 있습니다.
  */
 function loadSettings() {
   try {
     const rawData = localStorage.getItem(STORAGE_KEY);
     
-    // 예외 처리: 만약 저장된 유저 데이터가 존재하지 않는다면 복원을 생략하고 기본값 유지 (요구사항 1-4)
     if (!rawData) {
       console.log('[설정 로드] 저장된 이전 유저 설정 데이터가 존재하지 않아 기본값으로 초기 구동을 유지합니다.');
       return;
     }
 
-    // JSON 객체로 파싱
     const savedSettings = JSON.parse(rawData);
     console.log('[설정 로드 성공] 이전 유저 세팅을 발견하여 복원 프로세스를 가동합니다:', savedSettings);
 
-    // 1. 마스터 볼륨 상태 복원 및 HTML 마스터 슬라이더 위치 동기화 (요구사항 1-3)
+    // 1. 마스터 볼륨 상태 복원 및 HTML 마스터 슬라이더 위치 동기화
     if (typeof savedSettings.masterVolume === 'number') {
       masterVolume = savedSettings.masterVolume;
       const masterSlider = document.getElementById('master-volume');
@@ -166,28 +161,23 @@ function loadSettings() {
       }
     }
 
-    // 2. 개별 오디오 설정 복원 및 HTML 엘리먼트 위치/텍스트 강제 동기화 (요구사항 1-3)
+    // 2. 개별 오디오 설정 복원 및 HTML 엘리먼트 위치/텍스트 강제 동기화
     if (Array.isArray(savedSettings.sounds)) {
       savedSettings.sounds.forEach((savedSound) => {
-        // 전역 상태에 매핑되는 사운드 객체 탐색
         const sound = asmrSounds.find((s) => s.id === savedSound.id);
         
         if (sound) {
-          // A. 개별 지정 볼륨 및 플레이 상태 복원
           sound.volume = savedSound.volume;
           sound.isPlaying = savedSound.isPlaying;
 
-          // B. HTML 개별 슬라이더 요소의 위치 강제 동기화
           const sliderElement = document.getElementById(`volume-${sound.id}`);
           if (sliderElement) {
             sliderElement.value = sound.volume;
           }
 
-          // C. 실제 HTML5 Audio 인스턴스 볼륨 배율 즉각 재연산 동기화
           if (sound.audioInstance) {
             sound.audioInstance.volume = getCalculatedVolume(sound);
 
-            // D. 만약 이전 상태가 ON(isPlaying = true)이었다면 재생 시도 (브라우저 자율 허용 폭 반영)
             if (sound.isPlaying) {
               sound.audioInstance.play()
                 .then(() => {
@@ -195,7 +185,6 @@ function loadSettings() {
                   renderStatus();
                 })
                 .catch((autoplayError) => {
-                  // 브라우저 자동 재생 방지 정책으로 막히더라도 상태는 ON을 유지하고, 대기 안내
                   console.warn(`[자동재생 제한] 브라우저 보안 정책에 의해 ${sound.name}의 자동 재생이 대기 상태입니다. (유저 액션 시 재생)`);
                   sound.status = '준비 완료'; 
                   renderStatus();
@@ -208,7 +197,6 @@ function loadSettings() {
       });
     }
 
-    // 동기화 완료 후 화면 상태 갱신
     renderStatus();
     console.log('[설정 복원 완료] 모든 슬라이더 위치 및 음소거/스위치 배지가 실시간 동기화되었습니다.');
   } catch (error) {
@@ -305,7 +293,7 @@ function playAllSounds() {
         sound.status = '재생 중';
         sound.isPlaying = true;
         renderStatus();
-        saveSettings(); // 설정 변경 자동 백업 (요구사항 1-1)
+        saveSettings(); // 설정 변경 자동 백업
       })
       .catch((error) => {
         console.error(`${sound.name} 재생 시작 실패:`, error);
@@ -333,7 +321,7 @@ function stopAllSounds() {
   
   resetFadeOutVolume();
   renderStatus();
-  saveSettings(); // 설정 변경 자동 백업 (요구사항 1-1)
+  saveSettings(); // 설정 변경 자동 백업
 }
 
 /**
@@ -356,7 +344,7 @@ function toggleSoundSwitch(soundId) {
     audio.pause();
     sound.isPlaying = false;
     sound.status = '정지됨';
-    saveSettings(); // 스위치 해제 시 저장 (요구사항 1-1)
+    saveSettings(); // 스위치 해제 시 저장
   } else {
     audio.volume = getCalculatedVolume(sound); 
     
@@ -365,7 +353,7 @@ function toggleSoundSwitch(soundId) {
         sound.isPlaying = true;
         sound.status = '재생 중';
         renderStatus();
-        saveSettings(); // 스위치 켬 시 저장 (요구사항 1-1)
+        saveSettings(); // 스위치 켬 시 저장
       })
       .catch((err) => {
         console.error(`${sound.name} 개별 재생 실패:`, err);
@@ -393,7 +381,7 @@ function updateVolume(soundId, newVolume) {
       sound.audioInstance.volume = getCalculatedVolume(sound);
     }
     
-    saveSettings(); // 개별 볼륨 조정 시 실시간 자동 저장 (요구사항 1-1)
+    saveSettings(); // 개별 볼륨 조정 시 실시간 자동 저장
   }
 }
 
@@ -405,7 +393,7 @@ function updateVolume(soundId, newVolume) {
 function updateMasterVolume(newMasterVolume) {
   masterVolume = newMasterVolume;
   syncAllAudioVolumes();
-  saveSettings(); // 마스터 볼륨 조정 시 실시간 자동 저장 (요구사항 1-1)
+  saveSettings(); // 마스터 볼륨 조정 시 실시간 자동 저장
 }
 
 // ==========================================================================
@@ -556,13 +544,43 @@ function updateTimerDisplay(text) {
 }
 
 // ==========================================================================
-// 8. 이벤트 바인딩 및 어플리케이션 진입점
+// 8. 설정 서랍(Sidebar Drawer) 토글 모듈 (Step 7 핵심 추가 기능)
+// ==========================================================================
+
+/**
+ * [설정 서랍 상태 토글 함수] (요구사항 2-1)
+ * 우측 상단 기어 버튼 클릭 시 Drawer를 스르륵 열고 닫도록 'active' 클래스를 토글 제어합니다.
+ * 
+ * @param {boolean} isOpen - 명시적으로 열거나 닫을지 여부 (생략 시 토글)
+ */
+function toggleSettingsDrawer(isOpen) {
+  const drawerElement = document.getElementById('settings-drawer');
+  if (!drawerElement) return;
+
+  if (typeof isOpen === 'boolean') {
+    if (isOpen) {
+      drawerElement.classList.add('active');
+    } else {
+      drawerElement.classList.remove('active');
+    }
+  } else {
+    // 인자 생략 시 active 클래스 토글
+    drawerElement.classList.toggle('active');
+  }
+
+  const isCurrentActive = drawerElement.classList.contains('active');
+  console.log(`[설정 서랍] 서랍장 창이 ${isCurrentActive ? '열렸습니다.' : '닫혔습니다.'}`);
+}
+
+// ==========================================================================
+// 9. 이벤트 바인딩 및 어플리케이션 진입점
 // ==========================================================================
 
 /**
  * 버튼 및 슬라이더, 타이머 등과 비즈니스 제어 로직 간의 이벤트 연동을 수행합니다.
  */
 function setupEventListeners() {
+  // 1. 전체 제어 상단 버튼 바인딩
   const playAllButton = document.getElementById('btn-play-all');
   const stopAllButton = document.getElementById('btn-stop-all');
 
@@ -574,6 +592,7 @@ function setupEventListeners() {
     stopAllButton.addEventListener('click', stopAllSounds);
   }
 
+  // 2. 마스터 볼륨 슬라이더 조절 이벤트 감지 등록
   const masterVolumeSlider = document.getElementById('master-volume');
   if (masterVolumeSlider) {
     masterVolumeSlider.addEventListener('input', (e) => {
@@ -582,6 +601,7 @@ function setupEventListeners() {
     });
   }
 
+  // 3. 각 사운드별 개별 엘리먼트(볼륨 슬라이더, ON/OFF 스위치) 이벤트 등록
   asmrSounds.forEach((sound) => {
     const sliderElement = document.getElementById(`volume-${sound.id}`);
     if (sliderElement) {
@@ -599,6 +619,7 @@ function setupEventListeners() {
     }
   });
 
+  // 4. 직접 입력 방식 타이머 제어용 버튼 이벤트 등록
   const timerStartBtn = document.getElementById('btn-timer-start');
   const timerCancelBtn = document.getElementById('btn-timer-cancel');
 
@@ -608,9 +629,20 @@ function setupEventListeners() {
   if (timerCancelBtn) {
     timerCancelBtn.addEventListener('click', handleCancelTimer);
   }
+
+  // 5. [New] 설정 서랍(Sidebar Drawer) 열기 및 닫기 버튼 이벤트 바인딩 (요구사항 2-1)
+  const drawerToggleBtn = document.getElementById('btn-drawer-toggle');
+  const drawerCloseBtn = document.getElementById('btn-drawer-close');
+
+  if (drawerToggleBtn) {
+    drawerToggleBtn.addEventListener('click', () => toggleSettingsDrawer(true));
+  }
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', () => toggleSettingsDrawer(false));
+  }
 }
 
-// 문서 로드가 완료되면 오디오 초기화, 유저 세팅 로드 및 이벤트 리스너 실행 (요구사항 1-2)
+// 문서 로드가 완료되면 오디오 초기화, 유저 세팅 로드 및 이벤트 리스너 실행
 document.addEventListener('DOMContentLoaded', () => {
   initializeAudioSources(); // 1. 오디오 객체들 메모리 가동
   loadSettings();           // 2. LocalStorage에서 백업 데이터 확인 및 복구 동기화
