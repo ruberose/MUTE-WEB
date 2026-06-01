@@ -32,21 +32,21 @@ const asmrSounds = [
   {
     id: 'rain',
     name: '차분한 빗소리',
-    url: 'https://www.soundjay.com/nature/sounds/rain-07.mp3',
+    url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/rain.mp3',
     audioInstance: null,
     status: '준비 대기 중'
   },
   {
     id: 'campfire',
     name: '따뜻한 장작 소리',
-    url: 'https://www.soundjay.com/nature/sounds/camp-fire-1.mp3',
+    url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/campfire.mp3',
     audioInstance: null,
     status: '준비 대기 중'
   },
   {
     id: 'stream',
     name: '맑은 시냇물 소리',
-    url: 'https://www.soundjay.com/nature/sounds/river-1.mp3',
+    url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/river.mp3',
     audioInstance: null,
     status: '준비 대기 중'
   }
@@ -67,9 +67,6 @@ function initializeAudioSources() {
     
     // 2. 백색소음을 위한 무한 반복 재생 활성화 (요구사항 3-2)
     audio.loop = true;
-    
-    // 3. 크로스오리진 스트리밍 허용 설정 (필요시 대비)
-    audio.crossOrigin = 'anonymous';
 
     // 4. 오디오 인스턴스 전역 객체에 매핑
     sound.audioInstance = audio;
