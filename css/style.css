@@ -220,6 +220,27 @@ button {
   cursor: pointer;
 }
 
+/* [Step 8 추가] 좌측 상단 테마 선택 화면 복귀 단추 스타일 */
+.btn-theme-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: bold;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-theme-back:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
 /* 우측 상단 설정 기어 버튼 스타일 */
 .btn-settings-toggle {
   position: absolute;
@@ -525,10 +546,12 @@ button {
     margin: 40px auto;
     padding: 25px 15px;
   }
-  .btn-settings-toggle {
+  
+  /* 모바일 화면에서는 복귀 버튼과 설정 버튼을 나란히 단정하게 가로 배치 */
+  .btn-theme-back, .btn-settings-toggle {
     position: static;
     display: block;
-    margin: 0 auto 20px auto;
+    margin: 0 auto 10px auto;
     text-align: center;
     width: 100%;
     box-sizing: border-box;

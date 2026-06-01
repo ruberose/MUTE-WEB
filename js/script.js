@@ -8,13 +8,16 @@
  * 기존의 마스터 볼륨, 커스텀 취침 타이머, 10초 페이드아웃 및 설정 서랍 엔진을 완벽히 보존하면서,
  * 3가지 테마(자연, 판타지, 공포)에 최적화된 오디오 데이터 구조화(themeData)와 유저 선택에 따른 
  * 동적 화면 전환, 사운드 리스트의 동적 DOM 생성 및 테마별 개별 LocalStorage 관리 모듈을 확장 탑재했습니다.
+ * 또한, 메인 아레나에서 첫 화면으로 언제든 돌아갈 수 있는 안전한 복귀 엔진(goToThemeSelectPage)을 추가했습니다.
  * 
  * 주요 기능:
- * 1. [New] 테마별 사운드 데이터 구조화 (nature, fantasy, horror) 및 무료 mp3 연결
- * 2. [New] 초기 테마 선택 버튼 클릭 시 믹서 화면으로의 화면 전환 로직 (selectTheme)
- * 3. [New] 선택한 테마에 매핑되는 오디오 슬라이더, ON/OFF 스위치, 뱃지의 동적 DOM 렌더링 (renderAudioControls)
- * 4. [New] 테마별로 완전히 독립적으로 관리되는 LocalStorage 설정 백업/로드 모듈
- * 5. 마스터 볼륨 슬라이더 및 타이머/페이드아웃 통합 제어 엔진 그대로 상속 연동
+ * 1. 테마별 사운드 데이터 구조화 (nature, fantasy, horror) 및 무료 mp3 연결
+ * 2. 초기 테마 선택 버튼 클릭 시 믹서 화면으로의 화면 전환 로직 (selectTheme)
+ * 3. [New] 메인 아레나 좌측 상단 복귀 버튼 클릭 시 테마 선택 화면으로 복귀 (goToThemeSelectPage)
+ *    - 사운드와 타이머 전체를 완벽히 정지 및 리소스 소멸 처리하여 메모리 누수를 완벽하게 제어
+ * 4. 선택한 테마에 매핑되는 오디오 슬라이더, ON/OFF 스위치, 뱃지의 동적 DOM 렌더링 (renderAudioControls)
+ * 5. 테마별로 완전히 독립적으로 관리되는 LocalStorage 설정 백업/로드 모듈
+ * 6. 마스터 볼륨 슬라이더 및 타이머/페이드아웃 통합 제어 엔진 상속 연동
  */
 
 // ==========================================================================
@@ -128,7 +131,7 @@ const themeData = {
 /** @type {AsmrSound[]} */
 let asmrSounds = []; // 선택한 테마에 의해 동적으로 구성 및 채워지는 활성 사운드 리스트
 
-// [Step 8] 유저가 선택한 테마 ID를 저장하는 전역 변수 (요구사항 3-3)
+// 유저가 선택한 테마 ID를 저장하는 전역 변수 (요구사항 3-3)
 let currentThemeId = ''; 
 
 // 신 버전 로컬스토리지 키 설정 (기존 키와 데이터 포맷 충돌 방지)
@@ -200,6 +203,42 @@ function selectTheme(themeId) {
   
   if (themePage) themePage.style.display = 'none';
   if (mixerPage) mixerPage.style.display = 'block';
+}
+
+/**
+ * [Step 8 추가] 메인 믹서 화면에서 좌측 상단 '👈 테마 선택으로' 버튼 클릭 시 
+ * 작동 중인 모든 사운드와 타이머를 안전하게 정지하고 초기 테마 선택 화면으로 복귀합니다.
+ */
+function goToThemeSelectPage() {
+  console.log('[화면 복귀] 테마 선택 페이지로 복귀를 시도합니다. 재생 중인 사운드가 정지됩니다.');
+  
+  // 1. 가동 중인 오디오 엔진 전체 일시 정지 및 초기화
+  stopAllSounds();
+
+  // 2. 가동 중인 취침 타이머 인터벌 취소 및 표시 라벨 원상복구
+  handleCancelTimer();
+
+  // 3. 오디오 객체 리소스 메모리에서 완전 소거 (사운드 중복 로딩 및 메모리 누수 원천 방지)
+  asmrSounds.forEach((sound) => {
+    if (sound.audioInstance) {
+      sound.audioInstance.pause();
+      sound.audioInstance = null;
+    }
+  });
+  asmrSounds = [];
+
+  // 4. 전역 테마 ID 리셋
+  currentThemeId = '';
+
+  // 5. 화면 스위칭 (mixer-page 숨김, theme-select-page 노출)
+  const themePage = document.getElementById('theme-select-page');
+  const mixerPage = document.getElementById('mixer-page');
+  
+  if (themePage) themePage.style.display = 'flex';
+  if (mixerPage) mixerPage.style.display = 'none';
+
+  // 6. 설정 서랍(Drawer)이 열려있다면 자연스럽게 닫기 처리
+  toggleSettingsDrawer(false);
 }
 
 /**
@@ -689,8 +728,9 @@ function applyFadeOutEffect() {
 }
 
 /**
+ * [페이드아웃 볼륨 복구]
  * 페이드아웃이 가동되어 깎여있던 오디오 볼륨을 
- * 슬라이더가 지정한 원래 유저 지정 볼륨 강도로 즉시 100% 복원하는 복구 함수입니다.
+ * 슬라이더가 지정한 원래 유저 지정 볼륨 강도로 즉시 100% 복원합니다.
  */
 function resetFadeOutVolume() {
   isFadingOut = false;
@@ -789,7 +829,7 @@ function setupAudioEventListeners() {
  * 공통 제어 버튼 및 테마 선택 버튼 등에 대하여 전체 이벤트 바인딩을 수행합니다.
  */
 function setupEventListeners() {
-  // 1. [New] 테마 선택 버튼 리스너 바인딩 (요구사항 3-3)
+  // 1. 테마 선택 버튼 리스너 바인딩
   const btnNature = document.getElementById('btn-theme-nature');
   const btnFantasy = document.getElementById('btn-theme-fantasy');
   const btnHorror = document.getElementById('btn-theme-horror');
@@ -802,6 +842,12 @@ function setupEventListeners() {
   }
   if (btnHorror) {
     btnHorror.addEventListener('click', () => selectTheme('horror'));
+  }
+
+  // [Step 8 추가] 테마 선택 화면 복귀 버튼 이벤트 바인딩
+  const btnThemeBack = document.getElementById('btn-theme-back');
+  if (btnThemeBack) {
+    btnThemeBack.addEventListener('click', goToThemeSelectPage);
   }
 
   // 2. 전체 제어 상단 버튼 바인딩
