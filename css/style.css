@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MUTE-WEB CSS (Step 2 - Basic Layout & Slider Alignment)
+   MUTE-WEB CSS (Step 3 - Row Alignment & Basic Button Styling)
    ========================================================================== */
 
 /* 브라우저 기본 폰트 및 배경색 설정 */
@@ -13,7 +13,7 @@ body {
 
 /* 전체 컨테이너 정렬 */
 .app-container {
-  max-width: 650px;
+  max-width: 800px; /* 개별 컨트롤러 버튼 배치를 위해 가로폭을 살짝 확장 */
   margin: 0 auto;
   background-color: #ffffff;
   padding: 30px;
@@ -37,7 +37,7 @@ h1 {
   font-size: 14px;
 }
 
-/* 컨트롤러 버튼 영역 기본 정렬 */
+/* 전체 제어 컨트롤러 버튼 영역 정렬 */
 .controls-container {
   display: flex;
   justify-content: center;
@@ -45,7 +45,7 @@ h1 {
   margin-bottom: 40px;
 }
 
-/* 버튼 기본 스타일 */
+/* 전체 제어 버튼 기본 스타일 */
 button {
   padding: 12px 24px;
   font-size: 16px;
@@ -91,45 +91,74 @@ button {
   margin: 0;
 }
 
-/* [Step 2] 개별 오디오 슬라이더와 라벨을 감싸는 아이템 단위 컨테이너 (요구사항 1-2, 3) */
+/* [Step 3] 라벨, 슬라이더, 개별 재생, 개별 음소거 버튼, 상태 배지를 한 줄로 나란히 배치 */
 .audio-control-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 15px 20px;
   border-bottom: 1px solid #ecf0f1;
-  font-size: 16px;
-  gap: 15px; /* 각 요소별 간격 확보 */
+  font-size: 15px;
+  gap: 12px; /* 간격을 살짝 좁혀 버튼들이 밀리지 않도록 함 */
+  flex-wrap: wrap; /* 창 크기가 작아질 경우를 대비해 래핑 허용 */
 }
 
 .audio-control-item:last-child {
   border-bottom: none;
 }
 
-/* 사운드 이름 및 이모지 라벨 영역 고정 너비 지정 */
+/* 사운드 이름 및 이모지 라벨 영역 */
 .sound-label {
-  flex: 1; /* 이름 영역이 공간을 유연하게 차지함 */
-  min-width: 140px;
+  flex: 1.2;
+  min-width: 130px;
   font-weight: 500;
   color: #34495e;
 }
 
-/* [Step 2] 볼륨 조절 슬라이더 기본 가로 너비 및 레이아웃 정렬 */
+/* 볼륨 조절 슬라이더 영역 */
 .volume-slider {
-  flex: 2; /* 슬라이더가 더 넓은 면적을 차지하도록 유도 */
-  min-width: 150px;
+  flex: 1.5;
+  min-width: 100px;
   height: 6px;
   cursor: pointer;
 }
 
-/* 작동 상태 표시 텍스트 배지 영역 고정 너비 및 중앙 정렬 */
+/* [Step 3] 개별 토글/음소거 제어 버튼들의 기본 투박한 디자인 (요구사항 3) */
+.btn-control-individual {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: normal;
+  border-radius: 4px;
+  border: 1px solid #bdc3c7;
+  background-color: #ffffff;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 75px; /* 버튼 가로폭 동일화로 단정한 느낌 제공 */
+  text-align: center;
+}
+
+.btn-control-individual:hover {
+  background-color: #f1f2f6;
+  border-color: #7f8c8d;
+}
+
+/* [Step 3] 개별 음소거 활성화 시 토글 스타일 피드백 */
+.active-mute {
+  background-color: #ffe6e6 !important;
+  border-color: #ff9999 !important;
+  color: #cc0000 !important;
+  font-weight: 500;
+}
+
+/* 작동 상태 표시 배지 */
 .sound-status {
-  min-width: 80px;
+  min-width: 75px;
   text-align: center;
   font-weight: bold;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   background-color: #ecf0f1;
   color: #7f8c8d;
 }
@@ -150,4 +179,17 @@ button {
 .sound-status[data-status="준비 완료"] {
   background-color: #e8f4fd;
   color: #3498db;
+}
+
+/* 반응형 예외 스타일: 모바일 가로폭이 매우 좁아질 때 가독성 확보 */
+@media (max-width: 600px) {
+  .audio-control-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .sound-label, .volume-slider, .btn-control-individual, .sound-status {
+    width: 100%;
+    text-align: center;
+  }
 }
