@@ -199,9 +199,52 @@ function selectTheme(themeId) {
   loadSettings();
   restoreAllUiSegments();
 
+  // [디테일 패키지 3] 웰컴 터치 오버레이 노출 및 리셋
+  const welcomeOverlay = document.getElementById('welcome-overlay');
+  if (welcomeOverlay) {
+    welcomeOverlay.classList.remove('fade-out');
+  }
+
   document.getElementById('theme-select-page').style.display = 'none';
   document.getElementById('mixer-page').style.display = 'flex';
 }
+
+/**
+ * [디테일 패키지 3] 자동 재생 차단 해제를 위한 웰컴 오버레이 터치 이벤트 핸들러
+ * 유저의 이전 세션 복원 상태(isPlaying)를 보존하면서 일제히 오디오 재생을 개시합니다.
+ */
+function startAsmrOnTouch() {
+  const welcomeOverlay = document.getElementById('welcome-overlay');
+  if (welcomeOverlay) {
+    welcomeOverlay.classList.add('fade-out');
+  }
+
+  // 브라우저 터치 맥락이 확보되었으므로, 복원된 재생 목록 중 켜져 있어야 하는 소리만 골라 재생
+  let anyPlaying = false;
+  asmrSounds.forEach((sound) => {
+    if (sound.isPlaying && sound.audioInstance) {
+      sound.audioInstance.play()
+        .then(() => {
+          sound.status = '재생 중';
+          renderStatus();
+        })
+        .catch((err) => {
+          console.warn(`[터치 자동재생 차단 해제 시도] ${sound.name} 재생 시작 지연`, err);
+        });
+      anyPlaying = true;
+    }
+  });
+
+  // 만약 유저 기록이 아예 없는 최초 방문이거나 모든 소리가 꺼져 있던 상태였다면 디폴트로 전체 재생
+  if (!anyPlaying) {
+    playAllSounds();
+  } else {
+    // 하나 이상 켜져 있는 사운드가 복원 재생되었으므로 전체 재생 버튼 활성화
+    const btnPlayAll = document.getElementById('btn-play-all');
+    if (btnPlayAll) btnPlayAll.classList.add('active-play');
+  }
+}
+
 
 /**
  * 메인 믹서 화면에서 좌측 상단 복귀 버튼 클릭 시 
@@ -674,6 +717,15 @@ function setupEventListeners() {
     e.stopPropagation();
     restoreAllUiSegments();
   });
+
+  // [디테일 패키지 3] 웰컴 터치 오버레이 리스너 바인딩
+  const welcomeOverlay = document.getElementById('welcome-overlay');
+  if (welcomeOverlay) {
+    welcomeOverlay.addEventListener('click', (e) => {
+      e.stopPropagation(); // 멍 타겟 공간 클릭 시 복구 로직(#visual-space-zone)으로 전파 방지
+      startAsmrOnTouch();
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => { setupEventListeners(); });

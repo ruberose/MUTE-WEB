@@ -4,7 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mute — Quietude Ambient Mixer</title>
-  <meta name="description" content="MUTE-WEB의 Step 10 Focus Mode 페이지입니다.">
+  <meta name="description" content="의식의 가장 고요한 곳으로. 나만을 위한 커스텀 ASMR 믹서와 감각적인 멍 비주얼을 경험하세요.">
+  
+  <!-- [디테일 패키지 1] 감성적인 미니멀리즘 🎧 SVG Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🎧</text></svg>">
+
+  <!-- [디테일 패키지 2] SNS 공유 최적화 오픈 그래프 & 트위터 카드 메타 태그 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Mute — Quietude Ambient Mixer">
+  <meta property="og:description" content="의식의 가장 고요한 곳으로. 나만을 위한 커스텀 ASMR 믹서와 감각적인 멍 비주얼을 경험하세요.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=1200&auto=format&fit=crop">
+  <meta property="og:url" content="https://mute-web.pages.dev">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mute — Quietude Ambient Mixer">
+  <meta name="twitter:description" content="의식의 가장 고요한 곳으로. 나만을 위한 커스텀 ASMR 믹서와 감각적인 멍 비주얼을 경험하세요.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=1200&auto=format&fit=crop">
+
   <!-- 프리미엄 미니멀 서체 및 스타일시트 참조 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,6 +120,16 @@
         <video id="mung-video" autoplay loop muted playsinline></video>
 
         <canvas id="mung-canvas"></canvas>
+
+        <!-- [디테일 패키지 3] 자동 재생 제한 보안 대비 웰컴 터치 안내 UI 오버레이 -->
+        <div class="welcome-overlay" id="welcome-overlay">
+          <div class="welcome-overlay-content">
+            <span class="welcome-icon">🎧</span>
+            <span class="welcome-title">TAP TO EMBRACE SILENCE</span>
+            <span class="welcome-subtitle">화면을 가볍게 터치하면 고요한 ASMR 세계가 펼쳐집니다.</span>
+          </div>
+        </div>
+
         <div class="mung-text-overlay">
           <span id="theme-visual-emoji" style="display:none;">🌊</span> <!-- 로직 호환성 유지용 숨김 -->
           <span class="mung-sub-title">AMBIENT FLOW</span>
