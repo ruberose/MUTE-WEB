@@ -569,6 +569,7 @@ function hideUiSegment(targetId) {
   if (targetId === 'header-buttons') {
     document.getElementById('btn-theme-back').classList.add('ui-hidden-fade');
     document.getElementById('btn-drawer-toggle').classList.add('ui-hidden-fade');
+    document.getElementById('btn-share-mixer').classList.add('ui-hidden-fade');
     document.getElementById('btn-hide-header').classList.add('ui-hidden-fade');
   } else {
     const targetElement = document.getElementById(targetId);
@@ -586,6 +587,7 @@ function restoreAllUiSegments() {
 
   document.getElementById('btn-theme-back').classList.remove('ui-hidden-fade');
   document.getElementById('btn-drawer-toggle').classList.remove('ui-hidden-fade');
+  document.getElementById('btn-share-mixer').classList.remove('ui-hidden-fade');
   document.getElementById('btn-hide-header').classList.remove('ui-hidden-fade');
 
   const restoreBtn = document.getElementById('btn-ui-restore');
@@ -687,6 +689,68 @@ function setupAudioEventListeners() {
   });
 }
 
+// ==========================================================================
+// 12. [디테일 패키지 4] 웹사이트 공유 및 감성 토스트 시스템
+// ==========================================================================
+
+/**
+ * 웹사이트 URL 주소를 네이티브 다이얼로그로 공유하거나, 미지원 환경 시 클립보드로 복사합니다.
+ */
+async function shareWebsite() {
+  const shareData = {
+    title: 'Mute — Quietude Ambient Mixer',
+    text: '의식의 가장 고요한 곳으로. 나만을 위한 커스텀 ASMR 믹서와 감각적인 멍 비주얼을 경험해 보세요.',
+    url: window.location.href
+  };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+      console.log('[공유 완료] 네이티브 공유 다이얼로그 호출 성공');
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      showToast('🔗 클립보드에 웹사이트 주소가 복사되었습니다!');
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      console.warn('[공유 시도 중 폴백 실행]', err);
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast('🔗 클립보드에 웹사이트 주소가 복사되었습니다!');
+      } catch (clipErr) {
+        console.error('[클립보드 복사 실패]', clipErr);
+      }
+    }
+  }
+}
+
+/**
+ * 하단에 부드럽게 떠오르는 미니멀 반투명 토스트 메시지 렌더러
+ */
+function showToast(message) {
+  const existingToast = document.getElementById('mute-toast');
+  if (existingToast) existingToast.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'mute-toast';
+  toast.className = 'mute-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // 브라우저 렌더링 동기화를 위한 미세 딜레이
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 30);
+
+  // 2.5초 노출 후 스르륵 제거
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 350);
+  }, 2500);
+}
+
 function setupEventListeners() {
   document.getElementById('btn-theme-nature').addEventListener('click', () => selectTheme('nature'));
   document.getElementById('btn-theme-fantasy').addEventListener('click', () => selectTheme('fantasy'));
@@ -703,6 +767,12 @@ function setupEventListeners() {
   document.getElementById('btn-timer-cancel').addEventListener('click', handleCancelTimer);
   document.getElementById('btn-drawer-toggle').addEventListener('click', () => toggleSettingsDrawer(true));
   document.getElementById('btn-drawer-close').addEventListener('click', () => toggleSettingsDrawer(false));
+
+  // [디테일 패키지 4] 웹사이트 공유 단추 리스너 연결
+  const btnShareMain = document.getElementById('btn-share-main');
+  const btnShareMixer = document.getElementById('btn-share-mixer');
+  if (btnShareMain) btnShareMain.addEventListener('click', shareWebsite);
+  if (btnShareMixer) btnShareMixer.addEventListener('click', shareWebsite);
 
   // Focus Mode 가리기 이벤트 위임 바인딩
   document.querySelectorAll('.btn-ui-hide').forEach((btn) => {

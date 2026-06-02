@@ -340,3 +340,104 @@ body::before {
   color: var(--text-secondary);
   line-height: 1.5;
 }
+
+/* ==========================================================================
+   [디테일 패키지 4] 웹사이트 공유 버튼 및 프리미엄 미니멀 토스트 알림 스타일
+   ========================================================================== */
+.btn-share-main {
+  position: absolute;
+  top: 24px; right: 24px;
+  background: rgba(24, 24, 27, 0.4);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-share-main:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(24, 24, 27, 0.7);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.btn-share-mixer {
+  position: absolute;
+  top: -40px;
+  right: 155px; /* MIXER SETTING 버튼(right: 10px) 왼쪽 정비 배열 */
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.3s, opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-share-mixer:hover {
+  color: var(--text-primary);
+}
+
+/* Focus Mode 가리기 연동 */
+.btn-share-mixer.ui-hidden-fade {
+  opacity: 0 !important;
+  transform: scale(0.8) translateX(10px);
+  pointer-events: none;
+}
+
+.mute-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translate(-50%, 20px);
+  background: rgba(24, 24, 27, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 24px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mute-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* 반응형 처리: 모바일 기기에서의 공유 버튼 배치 보정 */
+@media (max-width: 700px) {
+  .btn-share-main {
+    top: 16px; right: 16px;
+    padding: 8px;
+    background: #18181b;
+    border: 1px solid #27272a;
+  }
+  .btn-share-mixer {
+    position: fixed;
+    top: 16px;
+    right: 170px; /* 모바일 세팅 버튼 왼쪽 */
+    background: #18181b;
+    border: 1px solid #27272a;
+    padding: 6px 12px;
+    border-radius: 6px;
+    z-index: 100;
+  }
+}
