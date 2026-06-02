@@ -197,7 +197,7 @@ function selectTheme(themeId) {
   resetEngine();
   setupTheme(themeId);
   loadSettings();
-  restoreAllUiSegments();
+  enableFocusMode(false);
 
   // [디테일 패키지 3] 웰컴 터치 오버레이 노출 및 리셋
   const welcomeOverlay = document.getElementById('welcome-overlay');
@@ -253,7 +253,7 @@ function startAsmrOnTouch() {
 function goToThemeSelectPage() {
   saveSettings();
   resetEngine();
-  restoreAllUiSegments();
+  enableFocusMode(false);
   currentThemeId = '';
 
   document.getElementById('theme-select-page').style.display = 'flex';
@@ -565,34 +565,55 @@ function toggleSettingsDrawer(isOpen) {
 // 9. Focus Mode (UI 개별 가리기 및 일괄 복구) 제어
 // ==========================================================================
 
-function hideUiSegment(targetId) {
-  if (targetId === 'header-buttons') {
-    document.getElementById('btn-theme-back').classList.add('ui-hidden-fade');
-    document.getElementById('btn-drawer-toggle').classList.add('ui-hidden-fade');
-    document.getElementById('btn-share-mixer').classList.add('ui-hidden-fade');
-    document.getElementById('btn-hide-header').classList.add('ui-hidden-fade');
+/**
+ * [디테일 패키지 5] 전체 UI 숨기기 (몰입 모드) 토글 제어 함수
+ * @param {boolean} active - 몰입 모드 활성화 여부
+ */
+function enableFocusMode(active) {
+  const mixerPage = document.getElementById('mixer-page');
+  const focusOverlay = document.getElementById('focus-overlay-controls');
+  const welcomeOverlay = document.getElementById('welcome-overlay');
+
+  if (active) {
+    if (mixerPage) mixerPage.classList.add('focus-mode-active');
+    if (focusOverlay) focusOverlay.style.display = 'flex';
+    
+    // 웰컴 오버레이도 몰입감을 방해하지 않게 만약 존재한다면 즉시 감춤
+    if (welcomeOverlay) welcomeOverlay.classList.add('fade-out');
+
+    // 캔버스 크기를 브라우저 전체화면 크기로 확장 (generative wave를 전체화면으로 수놓음)
+    resizeCanvasToFullscreen(true);
   } else {
-    const targetElement = document.getElementById(targetId);
-    if (targetElement) targetElement.classList.add('ui-hidden-fade');
+    if (mixerPage) mixerPage.classList.remove('focus-mode-active');
+    if (focusOverlay) focusOverlay.style.display = 'none';
+
+    // 캔버스 크기를 원래의 멍 공간 상자 규격으로 복구
+    resizeCanvasToFullscreen(false);
   }
-  const restoreBtn = document.getElementById('btn-ui-restore');
-  if (restoreBtn) restoreBtn.style.display = 'inline-block';
 }
 
-function restoreAllUiSegments() {
-  const topControls = document.getElementById('top-controls');
-  const timerSection = document.getElementById('timer-section');
-  if (topControls) topControls.classList.remove('ui-hidden-fade');
-  if (timerSection) timerSection.classList.remove('ui-hidden-fade');
-
-  document.getElementById('btn-theme-back').classList.remove('ui-hidden-fade');
-  document.getElementById('btn-drawer-toggle').classList.remove('ui-hidden-fade');
-  document.getElementById('btn-share-mixer').classList.remove('ui-hidden-fade');
-  document.getElementById('btn-hide-header').classList.remove('ui-hidden-fade');
-
-  const restoreBtn = document.getElementById('btn-ui-restore');
-  if (restoreBtn) restoreBtn.style.display = 'none';
+/**
+ * 몰입 모드 시 캔버스를 전체화면으로 리사이징하여 파형 입자가 화면 전체에 공명하도록 보정하는 유틸
+ */
+function resizeCanvasToFullscreen(isFullscreen) {
+  const canvas = document.getElementById('mung-canvas');
+  if (!canvas) return;
+  if (isFullscreen) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  } else {
+    canvas.width = 280;
+    canvas.height = 240;
+  }
 }
+
+// 윈도우 크기 변경 시 전체 화면 캔버스 리사이징 리스너 연결
+window.addEventListener('resize', () => {
+  const mixerPage = document.getElementById('mixer-page');
+  if (mixerPage && mixerPage.classList.contains('focus-mode-active')) {
+    resizeCanvasToFullscreen(true);
+  }
+});
 
 // ==========================================================================
 // 10. 🎨 [디자인 알파] 제네러티브 노이즈 라인 웨이브 드로잉 시스템
@@ -774,25 +795,20 @@ function setupEventListeners() {
   if (btnShareMain) btnShareMain.addEventListener('click', shareWebsite);
   if (btnShareMixer) btnShareMixer.addEventListener('click', shareWebsite);
 
-  // Focus Mode 가리기 이벤트 위임 바인딩
-  document.querySelectorAll('.btn-ui-hide').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      hideUiSegment(btn.getAttribute('data-target'));
-    });
-  });
+  // [디테일 패키지 5] 전체화면 멍 (몰입 모드) 토글 리스너 연결
+  const btnFocusToggle = document.getElementById('btn-focus-toggle');
+  const btnFocusRestore = document.getElementById('btn-focus-restore');
+  const btnDrawerToggleFocus = document.getElementById('btn-drawer-toggle-focus');
 
-  document.getElementById('visual-space-zone').addEventListener('click', () => restoreAllUiSegments());
-  document.getElementById('btn-ui-restore').addEventListener('click', (e) => {
-    e.stopPropagation();
-    restoreAllUiSegments();
-  });
+  if (btnFocusToggle) btnFocusToggle.addEventListener('click', () => enableFocusMode(true));
+  if (btnFocusRestore) btnFocusRestore.addEventListener('click', () => enableFocusMode(false));
+  if (btnDrawerToggleFocus) btnDrawerToggleFocus.addEventListener('click', () => toggleSettingsDrawer(true));
 
   // [디테일 패키지 3] 웰컴 터치 오버레이 리스너 바인딩
   const welcomeOverlay = document.getElementById('welcome-overlay');
   if (welcomeOverlay) {
     welcomeOverlay.addEventListener('click', (e) => {
-      e.stopPropagation(); // 멍 타겟 공간 클릭 시 복구 로직(#visual-space-zone)으로 전파 방지
+      e.stopPropagation(); // 오버레이 클릭 전파 방지
       startAsmrOnTouch();
     });
   }

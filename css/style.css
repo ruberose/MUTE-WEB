@@ -124,15 +124,42 @@ body::before {
 }
 .master-volume-slider:hover::-webkit-slider-thumb, .volume-slider:hover::-webkit-slider-thumb { transform: scale(1.5); }
 
-/* 네비게이션 아이콘 버튼 라인업 */
+/* [디테일 패키지 5] 상단 유틸리티 바 (테마선택 - 전체화면 멍 - 공유/믹서설정) */
+.header-utility-bar {
+  position: absolute;
+  top: -45px; left: 10px; right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .btn-theme-back, .btn-settings-toggle {
-  position: absolute; top: -40px; background: none; border: none;
+  background: none; border: none;
   color: var(--text-secondary); font-size: 0.72rem; font-weight: 400;
   letter-spacing: 0.1em; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color 0.3s;
 }
-.btn-theme-back { left: 10px; }
-.btn-settings-toggle { right: 10px; }
+
 .btn-theme-back:hover, .btn-settings-toggle:hover { color: var(--text-primary); }
+
+.btn-focus-toggle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: none; border: none;
+  color: var(--text-secondary); font-size: 0.72rem; font-weight: 400;
+  letter-spacing: 0.1em; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color 0.3s;
+}
+
+.btn-focus-toggle:hover { color: var(--text-primary); }
+
 .icon-svg { width: 14px; height: 14px; }
 
 /* ==========================================================================
@@ -142,6 +169,7 @@ body::before {
   height: 240px; border: 1px solid var(--border-subtle); background: rgba(24, 24, 27, 0.2);
   border-radius: 12px; display: flex; justify-content: center; align-items: center;
   position: relative; overflow: hidden; margin: 15px 0;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* [Step 10 후속] 비디오 쉘 백그라운드 꽉 차게 렌더링 */
@@ -188,42 +216,97 @@ body::before {
 .timer-display-label { font-size: 1rem; font-weight: 300; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 
 /* ==========================================================================
-   [Focus Mode UI 개별 가리기 조작계]
+   [Focus Mode - 전체화면 멍 (몰입 모드) 상태 전이 스타일]
    ========================================================================== */
-.btn-ui-hide {
-  position: absolute; top: 12px; right: 12px; padding: 3px 8px;
-  font-size: 0.6rem; font-weight: 300; letter-spacing: 0.05em;
-  background-color: #09090b; color: #52525b; border: 1px solid #27272a;
-  border-radius: 4px; cursor: pointer; z-index: 10; transition: all 0.3s; pointer-events: auto;
-}
-.btn-ui-hide:hover { border-color: #7f1d1d; color: #fca5a5; }
-#btn-hide-header { top: -40px; left: 50%; transform: translateX(-50%); right: auto; }
 
-/* 미니멀 페이드아웃 상태 전이 코어 클래스 */
-.top-controls-wrapper, .timer-container {
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s ease, margin 0.4s ease, padding 0.4s ease;
+/* 몰입 모드(전체화면 멍)가 켜졌을 때 다른 컴포넌트들을 스르륵 페이드아웃 */
+.focus-mode-active .header-utility-bar {
+  opacity: 0 !important;
+  transform: translateY(-12px) !important;
+  pointer-events: none !important;
 }
-.ui-hidden-fade {
-  opacity: 0 !important; transform: scale(0.97); pointer-events: none;
-  max-height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important; overflow: hidden;
-}
-.btn-theme-back.ui-hidden-fade, .btn-settings-toggle.ui-hidden-fade, #btn-hide-header.ui-hidden-fade {
-  opacity: 0 !important; transform: translate(-50%, 10px) scale(0.8); pointer-events: none;
-}
-.btn-theme-back.ui-hidden-fade { transform: scale(0.8) translateX(-10px); }
-.btn-settings-toggle.ui-hidden-fade { transform: scale(0.8) translateX(10px); }
 
-/* 마스터 일괄 복구 버튼 */
-.btn-ui-restore {
-  padding: 8px 18px; font-size: 0.72rem; font-weight: 400; letter-spacing: 0.05em;
-  background-color: var(--text-primary); color: var(--bg-base); border: none;
-  border-radius: 6px; cursor: pointer; margin-top: 14px; pointer-events: auto;
-  transition: all 0.3s; animation: pulse-restore 2s infinite; position: relative; z-index: 20;
+.focus-mode-active .arena-header {
+  opacity: 0 !important;
+  transform: translateY(-12px) !important;
+  pointer-events: none !important;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes pulse-restore {
-  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3); }
-  70% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+
+.focus-mode-active .top-controls-wrapper {
+  opacity: 0 !important;
+  transform: translateY(-15px) !important;
+  pointer-events: none !important;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.focus-mode-active .timer-container {
+  opacity: 0 !important;
+  transform: translateY(15px) !important;
+  pointer-events: none !important;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 멍 글자 설명 레이어도 오버레이 비주얼 몰입을 위해 스르륵 숨김 */
+.focus-mode-active .mung-text-overlay {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 중앙 멍 비주얼 공간을 fixed 전면 브라우저 화면으로 꽉 차게 확장 */
+.focus-mode-active .visual-space {
+  position: fixed !important;
+  top: 0 !important; left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  z-index: 5 !important; /* 백그라운드 영상화 */
+}
+
+/* 몰입 모드 시 우측 상단 플로팅 포커스 제어 패널 등장 */
+.focus-overlay-controls {
+  position: fixed;
+  top: 24px; right: 24px;
+  display: flex;
+  gap: 12px;
+  z-index: 10000; /* 전체 화면 영상 레이어보다 무조건 위 */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.focus-mode-active .focus-overlay-controls {
+  display: flex !important;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.btn-focus-restore, .btn-settings-toggle-focus {
+  background: rgba(24, 24, 27, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-focus-restore:hover, .btn-settings-toggle-focus:hover {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(24, 24, 27, 0.75);
+  transform: scale(1.08);
 }
 
 /* ==========================================================================

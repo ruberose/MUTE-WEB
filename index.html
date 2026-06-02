@@ -84,26 +84,35 @@
 
     <main class="main-arena" id="main-arena">
       
-      <!-- [Focus Mode] 최상단 이동/설정 버튼 가리기 단추 -->
-      <button type="button" class="btn-ui-hide" id="btn-hide-header" data-target="header-buttons" title="최상단 버튼 가리기">✕ 버튼 숨기기</button>
+      <!-- [디테일 패키지 5] 상단 유틸리티 정비 바 (테마선택 - 전체화면 멍 - 공유/믹서설정) -->
+      <div class="header-utility-bar" id="header-utility-bar">
+        <!-- 좌측 상단 복귀 단추 -->
+        <button type="button" class="btn-theme-back" id="btn-theme-back">
+          <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          테마 선택
+        </button>
 
-      <!-- 좌측 상단 복귀 단추 -->
-      <button type="button" class="btn-theme-back" id="btn-theme-back">
-        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        테마 선택
-      </button>
+        <!-- 중앙 상단: 전체화면 멍 (몰입 모드 토글) -->
+        <button type="button" class="btn-focus-toggle" id="btn-focus-toggle" title="전체 UI 숨기기 (몰입 모드)">
+          전체 화면 멍
+          <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </button>
 
-      <!-- 우측 상단 공유 단추 -->
-      <button type="button" class="btn-share-mixer" id="btn-share-mixer" title="웹사이트 공유">
-        공유
-        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l5.292-3.176m0 8.868l-5.292-3.176M21 12a3 3 0 11-6 0 3 3 0 016 0zm-12 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      </button>
+        <!-- 우측 상단 그룹 -->
+        <div class="header-right-group">
+          <!-- 우측 상단 공유 단추 -->
+          <button type="button" class="btn-share-mixer" id="btn-share-mixer" title="웹사이트 공유">
+            공유
+            <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l5.292-3.176m0 8.868l-5.292-3.176M21 12a3 3 0 11-6 0 3 3 0 016 0zm-12 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </button>
 
-      <!-- 우측 상단 설정 서랍 개폐 단추 -->
-      <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">
-        믹서 설정
-        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-      </button>
+          <!-- 우측 상단 설정 서랍 개폐 단추 -->
+          <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">
+            믹서 설정
+            <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+          </button>
+        </div>
+      </div>
 
       <header class="arena-header">
         <h1 id="app-title">MUTE</h1>
@@ -112,8 +121,6 @@
 
       <!-- 상단 제어 및 마스터 볼륨 영역 -->
       <section class="top-controls-wrapper" id="top-controls">
-        <button type="button" class="btn-ui-hide" data-target="top-controls" title="볼륨 조절 영역 숨기기">✕ 영역 숨기기</button>
-
         <div class="controls-container" id="player-controls">
           <button type="button" id="btn-play-all">전체 재생</button>
           <button type="button" id="btn-stop-all">전체 정지</button>
@@ -148,16 +155,11 @@
           <span class="mung-sub-title">공간의 흐름</span>
           <h2 id="current-bg-name">NATURE ROOM</h2>
           <span id="theme-visual-text" class="mung-description">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
-
-          <!-- 마스터 복구 버튼 -->
-          <button type="button" class="btn-ui-restore" id="btn-ui-restore" style="display: none;">🔄 숨겨진 UI 전체 복구하기</button>
         </div>
       </section>
 
       <!-- 오디오 페이드아웃 타이머 제어판 -->
       <section class="timer-container" id="timer-section">
-        <button type="button" class="btn-ui-hide" data-target="timer-section" title="타이머 영역 숨기기">✕ 영역 숨기기</button>
-
         <h3 class="timer-title" id="timer-section-title">취침 예약 타이머</h3>
         
         <div class="timer-controls-row" id="timer-inputs-container">
@@ -170,6 +172,18 @@
       </section>
 
     </main>
+
+    <!-- 몰입 모드 시 우측 상단에 오버레이될 미세 복구 및 설정 컨트롤 바 -->
+    <div class="focus-overlay-controls" id="focus-overlay-controls" style="display: none;">
+      <!-- UI 복구 (X) -->
+      <button type="button" class="btn-focus-restore" id="btn-focus-restore" title="모든 UI 다시 보이기">
+        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <!-- 믹서 설정 (동일 기능) -->
+      <button type="button" class="btn-settings-toggle-focus" id="btn-drawer-toggle-focus" title="믹서 설정 열기">
+        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      </button>
+    </div>
 
     <!-- ==========================================================================
          영역 2: 설정 서랍 (Sidebar Drawer Content)
