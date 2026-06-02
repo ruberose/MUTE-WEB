@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Focus Mode UI 가리기)</title>
-  <meta name="description" content="MUTE-WEB의 Step 10 Focus Mode 페이지입니다. 불멍 영상을 방해 없이 감상할 수 있도록 메인 화면의 각 컴포넌트 구획마다 개별 임시 제거 버튼(✕)을 탑재했습니다.">
-  
-  <!-- CSS 스타일시트 상대경로 참조 -->
+  <title>Mute — Quietude Ambient Mixer</title>
+  <meta name="description" content="MUTE-WEB의 Step 10 Focus Mode 페이지입니다.">
+  <!-- 프리미엄 미니멀 서체 및 스타일시트 참조 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&family=Noto+Sans+KR:wght@200;300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,110 +18,113 @@
        ========================================================================== -->
   <div id="theme-select-page">
     <div class="theme-select-container">
-      <!-- 헤더 및 안내 메시지 -->
-      <h1 class="theme-select-title">MUTE-WEB ASMR</h1>
-      <p class="theme-select-subtitle">원하는 백색소음 테마를 선택해 몰입을 시작해 보세요.</p>
+      <h1 class="theme-select-title">Mute</h1>
+      <p class="theme-select-subtitle">의식의 가장 고요한 곳으로. 오늘의 호흡에 어울리는 소리 무드를 선택하세요.</p>
       
-      <!-- 테마 선택 버튼 그룹 (요구사항 2-2: 자연, 판타지, 공포 테마 배치) -->
       <div class="theme-buttons-grid">
-        <!-- 🌳 자연 테마 선택 버튼 -->
+        <!-- 🌳 자연 테마 -->
         <button type="button" class="btn-theme-select" id="btn-theme-nature">
-          <span class="theme-icon">🌳</span>
-          <span class="theme-name">자연 테마</span>
+          <div class="card-icon-wrapper">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+            </svg>
+          </div>
+          <span class="theme-name">NATURE</span>
         </button>
 
-        <!-- 🔮 판타지 테마 선택 버튼 -->
+        <!-- 🔮 판타지 테마 -->
         <button type="button" class="btn-theme-select" id="btn-theme-fantasy">
-          <span class="theme-icon">🔮</span>
-          <span class="theme-name">판타지 테마</span>
+          <div class="card-icon-wrapper">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l3.594-4.811L17 19l1.183-7.514zM21 12a9 9 0 11-18 0 9 9 0 011-4.73l6.594-4.811L12 3l3.594 4.811L21 12z"/>
+            </svg>
+          </div>
+          <span class="theme-name">FANTASY</span>
         </button>
 
-        <!-- 👻 공포 테마 선택 버튼 -->
+        <!-- 👻 공포 테마 -->
         <button type="button" class="btn-theme-select" id="btn-theme-horror">
-          <span class="theme-icon">👻</span>
-          <span class="theme-name">공포 테마</span>
+          <div class="card-icon-wrapper">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+          <span class="theme-name">EERIE NIGHT</span>
         </button>
       </div>
     </div>
   </div>
 
-
   <!-- ==========================================================================
-       [Step 8] 기존 믹서 및 멍 페이지 전체 영역 (Mixer Page Container) - 평소 숨김 처리
+       [Step 8] 기존 믹서 및 멍 페이지 전체 영역 (Mixer Page Container)
        ========================================================================== -->
   <div id="mixer-page" style="display: none;">
 
-    <!-- ==========================================================================
-         영역 1: 메인 화면 (Main Arena Content)
-         ========================================================================== -->
     <main class="main-arena" id="main-arena">
       
-      <!-- [Step 10 후속] 최상단 이동/설정 버튼 가리기용 조그만 단추 (요구사항 1) -->
-      <button type="button" class="btn-ui-hide" id="btn-hide-header" data-target="header-buttons" title="최상단 버튼 가리기">✕ 버튼 가리기</button>
+      <!-- [Focus Mode] 최상단 이동/설정 버튼 가리기 단추 -->
+      <button type="button" class="btn-ui-hide" id="btn-hide-header" data-target="header-buttons" title="최상단 버튼 가리기">✕ BUTTON HIDE</button>
 
-      <!-- 좌측 상단 테마 선택 화면 복귀 단추 (👈) -->
-      <button type="button" class="btn-theme-back" id="btn-theme-back">👈 테마 선택으로</button>
+      <!-- 좌측 상단 복귀 단추 -->
+      <button type="button" class="btn-theme-back" id="btn-theme-back">
+        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        THEME SELECT
+      </button>
 
-      <!-- 우측 상단 설정 서랍 개폐 단추 (⚙️) -->
-      <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">⚙️ 사운드 조절 및 설정</button>
+      <!-- 우측 상단 설정 서랍 개폐 단추 -->
+      <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">
+        MIXER SETTING
+        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      </button>
 
-      <!-- 타이틀 영역 -->
-      <header>
-        <h1 id="app-title">MUTE-WEB ASMR</h1>
+      <header class="arena-header">
+        <h1 id="app-title">MUTE</h1>
         <p class="description" id="app-description">복잡한 설정은 숨겨두고, 비주얼과 소리에 깊이 몰입해 보세요.</p>
       </header>
 
       <!-- 상단 제어 및 마스터 볼륨 영역 -->
       <section class="top-controls-wrapper" id="top-controls">
-        <!-- [Step 10 후속] 개별 UI 가리기 버튼 (요구사항 1) -->
-        <button type="button" class="btn-ui-hide" data-target="top-controls" title="볼륨 조절 영역 숨기기">✕ 영역 가리기</button>
+        <button type="button" class="btn-ui-hide" data-target="top-controls" title="볼륨 조절 영역 숨기기">✕ HIDE ZONE</button>
 
-        <!-- 전체 재생 및 전체 정지 버튼 -->
         <div class="controls-container" id="player-controls">
           <button type="button" id="btn-play-all">전체 재생</button>
           <button type="button" id="btn-stop-all">전체 정지</button>
         </div>
 
-        <!-- 전체 음량을 조절하는 마스터 볼륨 슬라이더 구성 -->
         <div class="master-volume-container" id="master-volume-box">
-          <label for="master-volume" class="master-volume-label" id="master-volume-label">🎚️ 마스터 볼륨</label>
-          <input type="range" class="master-volume-slider" id="master-volume" min="0" max="1" step="0.01" value="1" aria-label="전체 마스터 볼륨 조절">
+          <label for="master-volume" class="master-volume-label" id="master-volume-label">MASTER DENSITY</label>
+          <div class="master-slider-row">
+            <input type="range" class="master-volume-slider" id="master-volume" min="0" max="1" step="0.01" value="1" aria-label="전체 마스터 볼륨 조절">
+          </div>
         </div>
       </section>
 
-      <!-- 중앙 대형 비주얼 멍 타겟 공간 -->
-      <section class="visual-space" id="visual-space-zone" title="멍 타겟 영역을 클릭하거나 아래 복구 단추를 누르면 가려진 UI가 모두 복구됩니다.">
-        <div style="text-align: center; position: relative; z-index: 10;">
-          <span style="font-size: 32px; display: block; margin-bottom: 10px;" id="theme-visual-emoji">🌊</span>
-          <!-- [Step 9] 메인 멍 타겟 공간의 배경명 텍스트 영역 추가 (요구사항 1-1) -->
-          <h2 id="current-bg-name" style="margin: 0 0 10px 0; color: #2c3e50; font-size: 20px;">모닥불</h2>
-          <span id="theme-visual-text" style="display: block; margin-bottom: 15px;">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
+      <!-- 중앙 대형 비주얼 멍 타겟 공간 (Canvas 연동 셸 레이어) -->
+      <section class="visual-space" id="visual-space-zone" title="멍 타겟 영역을 클릭하면 가려진 UI가 복구됩니다.">
+        <canvas id="mung-canvas"></canvas>
+        <div class="mung-text-overlay">
+          <span id="theme-visual-emoji" style="display:none;">🌊</span> <!-- 로직 호환성 유지용 숨김 -->
+          <span class="mung-sub-title">AMBIENT FLOW</span>
+          <h2 id="current-bg-name">NATURE ROOM</h2>
+          <span id="theme-visual-text" class="mung-description">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
 
-          <!-- [Step 10 후속] 가려진 UI를 일괄 복구시킬 수 있는 마스터 복구 버튼 (요구사항 2) -->
-          <button type="button" class="btn-ui-restore" id="btn-ui-restore" style="display: none;">🔄 숨겨진 UI 모두 복구</button>
+          <!-- 마스터 복구 버튼 -->
+          <button type="button" class="btn-ui-restore" id="btn-ui-restore" style="display: none;">🔄 RESTORE INTERACTIVE UI</button>
         </div>
       </section>
 
-      <!-- 오디오 페이드아웃 직접 지정 타이머 제어판 -->
+      <!-- 오디오 페이드아웃 타이머 제어판 -->
       <section class="timer-container" id="timer-section">
-        <!-- [Step 10 후속] 개별 UI 가리기 버튼 (요구사항 1) -->
-        <button type="button" class="btn-ui-hide" data-target="timer-section" title="타이머 영역 숨기기">✕ 영역 가리기</button>
+        <button type="button" class="btn-ui-hide" data-target="timer-section" title="타이머 영역 숨기기">✕ HIDE ZONE</button>
 
-        <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머</h3>
+        <h3 class="timer-title" id="timer-section-title">SLEEP TIMEOUT COUNTER</h3>
         
-        <!-- 수치 입력창, 시작 및 취소 단추 수평 배치 영역 -->
         <div class="timer-controls-row" id="timer-inputs-container">
-          <!-- 분 단위 정수 입력창 -->
-          <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="분 입력">
-          
-          <!-- 타이머 개시 버튼 -->
-          <button type="button" class="btn-timer-action" id="btn-timer-start">타이머 시작</button>
-          
-          <!-- 타이머 취소 버튼 -->
-          <button type="button" class="btn-timer-action" id="btn-timer-cancel">타이머 취소</button>
+          <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="MIN">
+          <button type="button" class="btn-timer-action" id="btn-timer-start">START</button>
+          <button type="button" class="btn-timer-action" id="btn-timer-cancel">CANCEL</button>
         </div>
 
-        <!-- 실시간 남은 시간 표시 라벨 -->
         <div class="timer-display-label" id="timer-display">남은 시간: 없음</div>
       </section>
 
@@ -130,30 +134,29 @@
          영역 2: 설정 서랍 (Sidebar Drawer Content)
          ========================================================================== -->
     <aside class="settings-drawer" id="settings-drawer">
-      
-      <!-- 서랍장 상단 타이틀 및 닫기 버튼 -->
       <div class="drawer-header" id="drawer-top">
-        <h2 class="drawer-title" id="drawer-heading">⚙️ 사운드 상세 믹서</h2>
-        <button type="button" class="btn-drawer-close" id="btn-drawer-close">✕ 닫기</button>
+        <h2 class="drawer-title" id="drawer-heading">AMBIENT LAYERS</h2>
+        <button type="button" class="btn-drawer-close" id="btn-drawer-close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
 
-      <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (Step 8/9/10: 자바스크립트에서 동적 생성) -->
       <section class="sounds-container" id="sounds-section">
         <ul class="sounds-list" id="sounds-list">
-          <!-- [Step 8/9/10] js/script.js 에서 선택한 테마에 맞는 사운드 아이템들을 동적으로 삽입합니다. -->
+          <!-- 동적 사운드 제어 항목 코드 서브인젝션 공간 -->
         </ul>
       </section>
 
-      <!-- 구글 애드센스 규격(300x250) 광고 배너 예정 영역 확보 -->
-      <div class="ad-banner-holder" style="width:300px; height:250px; background-color:#eee; margin:20px auto; text-align:center; line-height:250px; color:#666; border:1px solid #cbd5e1; border-radius:4px; font-weight:bold; font-size:12px;">
-        [구글 광고 배너 예정 영역 (300x250)]
+      <!-- 🔒 구글 애드센스 하단 레이아웃 홀더 벨트 -->
+      <div class="ad-banner-holder">
+        <div class="ad-interior-box">
+          PROMOTION COMPONENT<br>이 영역에 광고 스크립트(300x250)가 안착됩니다.
+        </div>
       </div>
-
     </aside>
 
   </div>
 
-  <!-- 자바스크립트 모듈 상대경로 참조 -->
   <script src="js/script.js"></script>
 </body>
 </html>
