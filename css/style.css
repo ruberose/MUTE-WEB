@@ -430,18 +430,20 @@ body::before {
    [디테일 패키지 4] 웹사이트 공유 버튼 및 프리미엄 미니멀 토스트 알림 스타일
    ========================================================================== */
 .btn-share-main {
-  position: absolute;
-  top: 24px; right: 24px;
+  margin: 40px auto 0 auto;
   background: rgba(24, 24, 27, 0.4);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  padding: 10px;
-  border-radius: 50%;
+  padding: 12px 28px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  z-index: 50;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  z-index: 50;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -453,31 +455,36 @@ body::before {
 }
 
 .btn-share-mixer {
-  position: absolute;
-  top: -40px;
-  right: 155px; /* MIXER SETTING 버튼(right: 10px) 왼쪽 정비 배열 */
-  background: none;
-  border: none;
+  margin: 24px auto 0 auto;
+  background: rgba(24, 24, 27, 0.4);
+  border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
+  padding: 10px 24px;
+  border-radius: 9999px;
   font-size: 0.72rem;
-  font-weight: 400;
-  letter-spacing: 0.1em;
+  font-weight: 300;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: color 0.3s, opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 8px;
+  z-index: 50;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-share-mixer:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(24, 24, 27, 0.7);
   color: var(--text-primary);
+  transform: translateY(-2px);
 }
 
-/* Focus Mode 가리기 연동 */
-.btn-share-mixer.ui-hidden-fade {
+/* 몰입 모드 활성화 시 하단 공유 버튼도 스르륵 페이드아웃 */
+.focus-mode-active .btn-share-mixer {
   opacity: 0 !important;
-  transform: scale(0.8) translateX(10px);
-  pointer-events: none;
+  transform: translateY(15px) !important;
+  pointer-events: none !important;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mute-toast {
@@ -507,22 +514,13 @@ body::before {
   transform: translate(-50%, 0);
 }
 
-/* 반응형 처리: 모바일 기기에서의 공유 버튼 배치 보정 */
+/* 반응형 처리: 스마트폰 반응형 규격 보완 */
 @media (max-width: 700px) {
+  /* 하단 공유 단추 마진 소폭 반응형 조율 */
   .btn-share-main {
-    top: 16px; right: 16px;
-    padding: 8px;
-    background: #18181b;
-    border: 1px solid #27272a;
+    margin-top: 32px;
   }
   .btn-share-mixer {
-    position: fixed;
-    top: 16px;
-    right: 170px; /* 모바일 세팅 버튼 왼쪽 */
-    background: #18181b;
-    border: 1px solid #27272a;
-    padding: 6px 12px;
-    border-radius: 6px;
-    z-index: 100;
+    margin-top: 18px;
   }
 }

@@ -34,11 +34,6 @@
        [Step 8] 첫 페이지 테마 선택 화면 (Theme Selection Page)
        ========================================================================== -->
   <div id="theme-select-page">
-    <!-- [디테일 패키지 4] 메인 화면 우측 상단 공유 단추 -->
-    <button type="button" class="btn-share-main" id="btn-share-main" title="웹사이트 공유">
-      <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l5.292-3.176m0 8.868l-5.292-3.176M21 12a3 3 0 11-6 0 3 3 0 016 0zm-12 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-    </button>
-
     <div class="theme-select-container">
       <h1 class="theme-select-title">Mute</h1>
       <p class="theme-select-subtitle">의식의 가장 고요한 곳으로. 오늘의 호흡에 어울리는 소리 무드를 선택하세요.</p>
@@ -74,6 +69,13 @@
           <span class="theme-name">EERIE NIGHT</span>
         </button>
       </div>
+
+      <!-- [디테일 패키지 4 개편] 테마 선택 화면 최하단 공유 단추 -->
+      <button type="button" class="btn-share-main" id="btn-share-main" title="웹사이트 공유">
+        감성 공유하기
+        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l5.292-3.176m0 8.868l-5.292-3.176M21 12a3 3 0 11-6 0 3 3 0 016 0zm-12 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
+    </div>
     </div>
   </div>
 
@@ -100,12 +102,6 @@
 
         <!-- 우측 상단 그룹 -->
         <div class="header-right-group">
-          <!-- 우측 상단 공유 단추 -->
-          <button type="button" class="btn-share-mixer" id="btn-share-mixer" title="웹사이트 공유">
-            공유
-            <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l5.292-3.176m0 8.868l-5.292-3.176M21 12a3 3 0 11-6 0 3 3 0 016 0zm-12 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          </button>
-
           <!-- 우측 상단 설정 서랍 개폐 단추 -->
           <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">
             믹서 설정
@@ -170,6 +166,12 @@
 
         <div class="timer-display-label" id="timer-display">남은 시간: 없음</div>
       </section>
+
+      <!-- [디테일 패키지 4 개편] 믹서 화면 하단 공유 단추 -->
+      <button type="button" class="btn-share-mixer" id="btn-share-mixer" title="웹사이트 공유">
+        고요한 감성 공유하기
+        <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l5.292-3.176m0 8.868l-5.292-3.176M21 12a3 3 0 11-6 0 3 3 0 016 0zm-12 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
 
     </main>
 
