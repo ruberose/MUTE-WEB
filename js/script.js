@@ -6,16 +6,21 @@
  * [역할 및 작동 방식]
  * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'feat/new-design' 브랜치 비즈니스 엔진을 담당합니다.
  * 기존의 마스터 볼륨, 커스텀 취침 타이머, 10초 페이드아웃, 설정 서랍, Focus Mode(UI 개별 가리기/복원)를 
- * 온전히 계승하면서, 제미나이와 공동 작업한 웰컴 카드 아이콘 SVG화, 미니멀 초다크 테마 디자인 규격 및 
- * 실시간 제네러티브 파형 드로잉 시스템(HTML5 Canvas)을 에러 없이 안정적으로 융합하였습니다.
+ * 온전히 계승하면서, 사용자가 요청한 메인 화면 중앙의 [불멍 비디오 mp4 연동]을 위해
+ * 테마별 로컬 비디오 매핑 주소와 온라인 고화질 Fallback CDN 주소를 융합한 동적 비디오 셋업 엔진을 구축했습니다.
  * 
- * 주요 디버깅 내역:
- * 1. [Fix] runCanvasLoop() 내 AppState.currentTheme 미정의 참조 오류를 전역 currentThemeId로 정밀 정정 완료
- * 2. [Fix] LocalStorage 키 명칭을 기존 Step 10 사양인 'mute_settings_${currentThemeId}'로 복구하여 완벽한 호환성 확보
+ * 주요 튜닝 내역:
+ * 1. [New] 테마별 다이내믹 비디오 매핑 (themeData 확장):
+ *    - 로컬 mp4 파일 경로(`video/nature.mp4` 등)를 우선 재생하도록 매핑
+ *    - 로컬에 파일이 아직 복사되지 않았을 때를 대비해 실시간 고화질 스톡 비디오 CDN 주소를 Fallback으로 융합
+ * 2. [New] setupTheme(themeId) 내 비디오 로드 및 자동 재생 파이프라인 추가:
+ *    - 비디오 에러 핸들러를 바인딩하여 로컬에 영상이 없을 시 자동으로 고품격 CDN 영상으로 스위칭하는 자가 복원 탑재
+ *    - 모바일 및 PC 브라우저 자동 재생 정책에 맞추어 playsinline 무음 가동 및 ASMR 음악 엔진과의 완벽한 싱크
+ * 3. [New] resetEngine() 내 비디오 일시 정지 및 리소스 완전 소멸 연동 완료
  */
 
 // ==========================================================================
-// 0. 테마별 오디오 메타데이터 정의
+// 0. 테마별 오디오 & 비디오 메타데이터 정의 (비디오 엔진 확장)
 // ==========================================================================
 
 /**
@@ -31,6 +36,8 @@
  * @property {string} bgName - 테마의 주 배경 개념
  * @property {string} emoji - 멍 공간에 매핑할 중앙 비주얼 이모지
  * @property {string} visualText - 멍 공간에 매핑할 하단 텍스트 설명
+ * @property {string} videoUrl - 로컬 mp4 비디오 탑재 경로 (사용자 복사용)
+ * @property {string} fallbackVideoUrl - 인터넷 연결 시 즉시 작동하는 온라인 고화질 스톡 비디오 CDN 주소
  * @property {SoundInfo[]} sounds - 해당 테마가 가지는 3가지 상세 백색소음 목록
  */
 
@@ -41,6 +48,10 @@ const themeData = {
     bgName: "RAINY CAMPFIRE",
     emoji: "🌳",
     visualText: "나뭇잎에 떨어지는 부드러운 빗소리와 화로의 조용한 불꽃",
+    // [요구사항] 사용자가 다운받은 mp4 비디오를 믹서 폴더 내부 'video/' 폴더에 넣을 수 있도록 로컬 경로 매핑
+    videoUrl: "video/nature.mp4",
+    // [Fallback] 로컬 파일이 아직 복사되지 않은 신규 접속 장소에서도 눈으로 확인할 수 있는 Pexels 고화질 direct CDN 불멍 비디오
+    fallbackVideoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fire-in-a-fireplace-in-close-up-40348-large.mp4",
     sounds: [
       { id: 'rain', name: '🌧️ Pebble Rain', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/rain.mp3' },
       { id: 'campfire', name: '🔥 Birch Fire', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/campfire.mp3' },
@@ -52,6 +63,8 @@ const themeData = {
     bgName: "ETHER MARKET",
     emoji: "🔮",
     visualText: "시간이 정지된 공중 마법 상점의 오묘하고 신비로운 선율",
+    videoUrl: "video/fantasy.mp4",
+    fallbackVideoUrl: "https://assets.mixkit.co/videos/preview/mixkit-slow-motion-of-light-particles-loop-39909-large.mp4",
     sounds: [
       { id: 'fantasy_melody', name: '✨ Star Choir', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
       { id: 'clock', name: '🕰️ Glass Chimes', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
@@ -63,6 +76,8 @@ const themeData = {
     bgName: "ABANDONED MANOR",
     emoji: "👻",
     visualText: "짙은 안개 속 버려진 고성의 서늘한 돌풍과 삐걱임",
+    videoUrl: "video/horror.mp4",
+    fallbackVideoUrl: "https://assets.mixkit.co/videos/preview/mixkit-dense-mist-in-a-forest-41618-large.mp4",
     sounds: [
       { id: 'spooky_wind', name: '💨 Mist Gale', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
       { id: 'creaky_door', name: '🚪 Timber Creak', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' },
@@ -71,22 +86,6 @@ const themeData = {
   }
 };
 
-// ==========================================================================
-// 1. 전역 상태 관리
-// ==========================================================================
-
-/**
- * @typedef {Object} AsmrSound
- * @property {string} id - 고유 식별자 (HTML 요소 매칭용)
- * @property {string} name - 사용자에게 표시될 이름
- * @property {string} url - 오디오 스트리밍용 MP3 주소
- * @property {HTMLAudioElement|null} audioInstance - 실제 재생을 담당할 오디오 객체
- * @property {string} status - 현재 재생 상태 ('준비 대기 중', '준비 완료', '재생 중', '정지됨')
- * @property {number} volume - 개별 지정 볼륨 크기 (0.0 ~ 1.0, 기본값: 0.5)
- * @property {boolean} isPlaying - 개별 ON/OFF 상태 (기본값: false)
- */
-
-/** @type {AsmrSound[]} */
 let asmrSounds = []; 
 let currentThemeId = ''; 
 let masterVolume = 1.0; 
@@ -99,7 +98,7 @@ let isFadingOut = false;
 // ==========================================================================
 
 /**
- * 선택된 테마 정보를 바탕으로 오디오 URL 주소를 갈아끼우고 
+ * 선택된 테마 정보를 바탕으로 오디오 URL 주소 및 비디오 쉘을 갈아끼우고 
  * 멍 타겟 명칭 및 믹서 라벨을 실시간 동적 매핑하는 핵심 셋업 함수
  * 
  * @param {string} themeId - 셋업할 테마 ID
@@ -110,6 +109,7 @@ function setupTheme(themeId) {
 
   currentThemeId = themeId;
 
+  // 1. 오디오 데이터 매핑 (기존 오디오 주소를 새 테마 URL로 완전히 교체 및 초기화)
   asmrSounds = themeInfo.sounds.map(sound => ({
     id: sound.id,
     name: sound.name,
@@ -134,16 +134,39 @@ function setupTheme(themeId) {
   initializeAudioSources();
   setupAudioEventListeners();
 
-  // 🎨 [디자인 알파: 테마별 제네러티브 캔버스 아트 구동 연동]
+  // 2. 🎨 [New] 다이내믹 백그라운드 mp4 비디오 셋업 및 자동 재생 개시 (요구사항 1)
+  const video = document.getElementById('mung-video');
+  if (video) {
+    // 로컬 경로의 mp4 우선 할당 (video/nature.mp4 등)
+    video.src = themeInfo.videoUrl;
+    
+    // [중요] 사용자의 로컬 컴퓨터에 mp4 파일이 아직 복사되지 않았을 때의 자가 치유 Fallback 옵션 결합
+    video.onerror = () => {
+      console.warn(`[로컬 영상 부재] '${themeInfo.videoUrl}' 로컬 비디오가 감지되지 않아, 고화질 온라인 CDN 비디오로 임시 우회 연동합니다.`);
+      // 온라인 실시간 고화질 무음 스톡 CDN 영상 주소 대입 및 자동 로드
+      video.src = themeInfo.fallbackVideoUrl;
+      video.load();
+      video.play().catch(() => {});
+    };
+
+    video.load();
+    video.play().catch((err) => {
+      console.warn('[비디오 자동재생 제한] 브라우저 보안 정책에 의해 비디오 시작이 지연되었습니다. (음소거 상태로 우회 구동)', err);
+    });
+  }
+
+  // 3. 🎨 [디자인 알파] 테마별 제네러티브 캔버스 아트 구동 연동
   initCanvasEffect(themeId);
 }
 
 /**
- * 가동 중인 오디오 엔진 및 취침 예약 타이머를 안전하고 깨끗하게 정지시키는 공통 리셋 모듈
+ * 가동 중인 오디오 엔진, 백그라운드 비디오 및 취침 예약 타이머를 안전하고 깨끗하게 정지시키는 공통 리셋 모듈
  */
 function resetEngine() {
   stopAllSounds();
   handleCancelTimer();
+  
+  // 1. 오디오 소멸
   asmrSounds.forEach((sound) => {
     if (sound.audioInstance) {
       sound.audioInstance.pause();
@@ -151,7 +174,17 @@ function resetEngine() {
     }
   });
   asmrSounds = [];
-  cancelAnimationFrame(canvasAnimId); // 캔버스 루프 애니메이션 일시 정지
+
+  // 2. 캔버스 루프 애니메이션 일시 정지
+  cancelAnimationFrame(canvasAnimId); 
+
+  // 3. 🎨 [New] 백그라운드 비디오 정지 및 리소스 메모리 완전 해제 (유령 오디오 및 메모리 누수 원천 방지)
+  const video = document.getElementById('mung-video');
+  if (video) {
+    video.pause();
+    video.removeAttribute('src'); // 오디오처럼 src 해제를 통한 인스턴스 소멸 유도
+    video.load();
+  }
 }
 
 /**
@@ -235,7 +268,7 @@ function initializeAudioSources() {
 }
 
 // ==========================================================================
-// 4. LocalStorage 유저 설정 저장 및 로드 모듈 (Step 10 규격 하위호환 복원)
+// 4. LocalStorage 유저 설정 저장 및 로드 모듈 (테마별 독립 격리 공간)
 // ==========================================================================
 
 /**
@@ -244,7 +277,6 @@ function initializeAudioSources() {
 function saveSettings() {
   if (!currentThemeId) return;
   try {
-    // [Fix] 기존 Step 10 저장 방식과의 하위 호환성을 위해 키 명칭을 원래대로 복구
     const storageKey = `mute_settings_${currentThemeId}`;
     const userSettings = {
       masterVolume: masterVolume,
@@ -261,7 +293,6 @@ function saveSettings() {
 function loadSettings() {
   if (!currentThemeId) return;
   try {
-    // [Fix] 기존 Step 10 저장 방식과의 하위 호환성을 위해 키 명칭을 원래대로 복구
     const storageKey = `mute_settings_${currentThemeId}`;
     const rawData = localStorage.getItem(storageKey);
     
@@ -346,7 +377,7 @@ function renderStatus() {
       labelElement.textContent = sound.status === '재생 중' ? 'RUNNING' : sound.status;
       labelElement.setAttribute('data-status', sound.status);
     }
-    const switchBtn = document.getElementById(`btn-switch-${sound.id}`);
+    const switchBtn = document.getElementById('btn-switch-' + sound.id);
     if (switchBtn) {
       switchBtn.textContent = sound.isPlaying ? 'ON' : 'OFF';
       if (sound.isPlaying) switchBtn.classList.add('active-on');
@@ -462,6 +493,9 @@ function setTimerControlsDisabled(disabled) {
   if (timerStartBtn) timerStartBtn.disabled = disabled;
 }
 
+/**
+ * 타이머 페이드아웃 적용
+ */
 function applyFadeOutEffect() { isFadingOut = true; syncAllAudioVolumes(); }
 function resetFadeOutVolume() { isFadingOut = false; syncAllAudioVolumes(); }
 function clearAllIntervals() { if (countdownIntervalId) { clearInterval(countdownIntervalId); countdownIntervalId = null; } }
@@ -516,7 +550,7 @@ function restoreAllUiSegments() {
 }
 
 // ==========================================================================
-// 10. 🎨 [디자인 알파] 제네러티브 노이즈 라인 웨이브 드로잉 시스템 (CORS / 런타임 오류 디버깅 완료)
+// 10. 🎨 [디자인 알파] 제네러티브 노이즈 라인 웨이브 드로잉 시스템
 // ==========================================================================
 const canvas = document.getElementById('mung-canvas');
 const ctx = canvas.getContext('2d');
@@ -534,8 +568,7 @@ function initCanvasEffect(themeId) {
 }
 
 /**
- * [Step 10 Fix] AppState가 정의되지 않아 브라우저가 정지하던 치명적인 런타임 버그를 
- * 전역 변수인 currentThemeId 매핑으로 수정하여 안전하고 완벽하게 파형 애니메이션을 요동치게 합니다.
+ * 파형 애니메이션 루프
  */
 function runCanvasLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);

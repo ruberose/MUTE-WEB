@@ -99,8 +99,11 @@
         </div>
       </section>
 
-      <!-- 중앙 대형 비주얼 멍 타겟 공간 (Canvas 연동 셸 레이어) -->
+      <!-- 중앙 대형 비주얼 멍 타겟 공간 (Canvas & Video 연동 셸 레이어) -->
       <section class="visual-space" id="visual-space-zone" title="멍 타겟 영역을 클릭하면 가려진 UI가 복구됩니다.">
+        <!-- [Step 10 후속] 다이내믹 백그라운드 mp4 비디오 쉘 주입 -->
+        <video id="mung-video" autoplay loop muted playsinline></video>
+
         <canvas id="mung-canvas"></canvas>
         <div class="mung-text-overlay">
           <span id="theme-visual-emoji" style="display:none;">🌊</span> <!-- 로직 호환성 유지용 숨김 -->
