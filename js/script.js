@@ -786,7 +786,7 @@ function setupEventListeners() {
 
   document.getElementById('btn-timer-start').addEventListener('click', handleStartTimer);
   document.getElementById('btn-timer-cancel').addEventListener('click', handleCancelTimer);
-  document.getElementById('btn-drawer-toggle').addEventListener('click', () => toggleSettingsDrawer(true));
+  document.getElementById('btn-drawer-toggle').addEventListener('click', () => toggleSettingsDrawer());
   document.getElementById('btn-drawer-close').addEventListener('click', () => toggleSettingsDrawer(false));
 
   // [디테일 패키지 4] 웹사이트 공유 단추 리스너 연결
@@ -802,7 +802,7 @@ function setupEventListeners() {
 
   if (btnFocusToggle) btnFocusToggle.addEventListener('click', () => enableFocusMode(true));
   if (btnFocusRestore) btnFocusRestore.addEventListener('click', () => enableFocusMode(false));
-  if (btnDrawerToggleFocus) btnDrawerToggleFocus.addEventListener('click', () => toggleSettingsDrawer(true));
+  if (btnDrawerToggleFocus) btnDrawerToggleFocus.addEventListener('click', () => toggleSettingsDrawer());
 
   // [디테일 패키지 3] 웰컴 터치 오버레이 리스너 바인딩
   const welcomeOverlay = document.getElementById('welcome-overlay');
