@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO 최적화 타이틀 및 메타태그 -->
-  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Step 9 테마 동적 업데이트)</title>
-  <meta name="description" content="MUTE-WEB의 Step 9 페이지입니다. 첫 접속 시 3가지 테마(자연, 판타지, 공포) 중 하나를 선택하는 화면을 노출하고, 선택에 따라 감성적인 백색소음 믹서가 다이내믹하게 열립니다.">
+  <title>MUTE-WEB | 감성 ASMR 백색소음 플레이어 (Focus Mode UI 가리기)</title>
+  <meta name="description" content="MUTE-WEB의 Step 10 Focus Mode 페이지입니다. 불멍 영상을 방해 없이 감상할 수 있도록 메인 화면의 각 컴포넌트 구획마다 개별 임시 제거 버튼(✕)을 탑재했습니다.">
   
   <!-- CSS 스타일시트 상대경로 참조 -->
   <link rel="stylesheet" href="css/style.css">
@@ -55,6 +55,9 @@
          ========================================================================== -->
     <main class="main-arena" id="main-arena">
       
+      <!-- [Step 10 후속] 최상단 이동/설정 버튼 가리기용 조그만 단추 (요구사항 1) -->
+      <button type="button" class="btn-ui-hide" id="btn-hide-header" data-target="header-buttons" title="최상단 버튼 가리기">✕ 버튼 가리기</button>
+
       <!-- 좌측 상단 테마 선택 화면 복귀 단추 (👈) -->
       <button type="button" class="btn-theme-back" id="btn-theme-back">👈 테마 선택으로</button>
 
@@ -69,6 +72,9 @@
 
       <!-- 상단 제어 및 마스터 볼륨 영역 -->
       <section class="top-controls-wrapper" id="top-controls">
+        <!-- [Step 10 후속] 개별 UI 가리기 버튼 (요구사항 1) -->
+        <button type="button" class="btn-ui-hide" data-target="top-controls" title="볼륨 조절 영역 숨기기">✕ 영역 가리기</button>
+
         <!-- 전체 재생 및 전체 정지 버튼 -->
         <div class="controls-container" id="player-controls">
           <button type="button" id="btn-play-all">전체 재생</button>
@@ -83,17 +89,23 @@
       </section>
 
       <!-- 중앙 대형 비주얼 멍 타겟 공간 -->
-      <section class="visual-space" id="visual-space-zone">
-        <div style="text-align: center;">
+      <section class="visual-space" id="visual-space-zone" title="멍 타겟 영역을 클릭하거나 아래 복구 단추를 누르면 가려진 UI가 모두 복구됩니다.">
+        <div style="text-align: center; position: relative; z-index: 10;">
           <span style="font-size: 32px; display: block; margin-bottom: 10px;" id="theme-visual-emoji">🌊</span>
           <!-- [Step 9] 메인 멍 타겟 공간의 배경명 텍스트 영역 추가 (요구사항 1-1) -->
           <h2 id="current-bg-name" style="margin: 0 0 10px 0; color: #2c3e50; font-size: 20px;">모닥불</h2>
-          <span id="theme-visual-text">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
+          <span id="theme-visual-text" style="display: block; margin-bottom: 15px;">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
+
+          <!-- [Step 10 후속] 가려진 UI를 일괄 복구시킬 수 있는 마스터 복구 버튼 (요구사항 2) -->
+          <button type="button" class="btn-ui-restore" id="btn-ui-restore" style="display: none;">🔄 숨겨진 UI 모두 복구</button>
         </div>
       </section>
 
       <!-- 오디오 페이드아웃 직접 지정 타이머 제어판 -->
       <section class="timer-container" id="timer-section">
+        <!-- [Step 10 후속] 개별 UI 가리기 버튼 (요구사항 1) -->
+        <button type="button" class="btn-ui-hide" data-target="timer-section" title="타이머 영역 숨기기">✕ 영역 가리기</button>
+
         <h3 class="timer-title" id="timer-section-title">⏱️ 취침 예약 타이머</h3>
         
         <!-- 수치 입력창, 시작 및 취소 단추 수평 배치 영역 -->
@@ -125,10 +137,10 @@
         <button type="button" class="btn-drawer-close" id="btn-drawer-close">✕ 닫기</button>
       </div>
 
-      <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (Step 8/9: 자바스크립트에서 동적 생성) -->
+      <!-- 음원별 볼륨 및 동작 제어 개별 리스트 (Step 8/9/10: 자바스크립트에서 동적 생성) -->
       <section class="sounds-container" id="sounds-section">
         <ul class="sounds-list" id="sounds-list">
-          <!-- [Step 8/9] js/script.js 에서 선택한 테마에 맞는 사운드 아이템들을 동적으로 삽입합니다. -->
+          <!-- [Step 8/9/10] js/script.js 에서 선택한 테마에 맞는 사운드 아이템들을 동적으로 삽입합니다. -->
         </ul>
       </section>
 

@@ -1,24 +1,26 @@
 /**
  * ==========================================================================
- * MUTE-WEB ASMR White Noise Web Application (Step 10 - Isolated Storage & AutoSave)
+ * MUTE-WEB ASMR White Noise Web Application (Step 10 - Isolated Storage & Focus Mode)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
- * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 10' 전체 비즈니스 엔진을 담당합니다.
- * 기존의 마스터 볼륨, 커스텀 취침 타이머, 10초 페이드아웃 및 셋업 파이프라인을 보존하면서,
- * 각 테마(자연, 판타지, 공포)별로 완전히 분리된 독자적 LocalStorage Key(예: 'mute_settings_nature')를 
- * 적용하여 데이터 격리성을 완벽히 확보하고, 기록이 없는 미경험 사용자에게는 개별 볼륨 0.5 및 전부 ON 상태의 
- * 힐링 세팅을 제공하는 예외 처리를 추가했습니다. 또한, 홈 버튼 복귀 시 안전 자동 저장 순서를 엄격히 동기화했습니다.
+ * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 10' 전체 비즈니스 엔진 및 Focus Mode를 담당합니다.
+ * 기존의 테마별 개별 키 분리형 LocalStorage(예: 'mute_settings_nature') 저장/로드 파이프라인을 온전히 계승하며,
+ * 불멍 및 몰입 감상을 극대화하기 위해 메인 아레나의 각 주요 제어 구역(항목)마다 개별 UI 임시 제거(✕) 단추를 배치하고,
+ * 중앙의 대형 멍 공간을 클릭하거나 마스터 복구 버튼을 누를 시 숨겨졌던 모든 UI가 스르륵 복원되는 
+ * 고품격 Focus Mode(Cinema Mode) 엔진을 새롭게 추가하여 융합 구현하였습니다.
  * 
  * 주요 기능:
  * 1. 테마별 사운드 데이터 구조화 (nature, fantasy, horror) 관리
  * 2. 테마 셋업 파이프라인(setupTheme) 및 UI 렌더링 호환
- * 3. [New] 테마별 개별 Key 분리형 LocalStorage 자동 저장 엔진 (saveSettings):
- *    - 'mute_settings_nature', 'mute_settings_fantasy', 'mute_settings_horror' 키에 매핑 저장
- * 4. [New] 신규 테마 접속 시 볼륨 0.5, 전체 ON 기본값 초기화 로드 엔진 (loadSettings):
- *    - 기존 기록 유실 시 다른 테마 간섭을 차단하고 볼륨 0.5 + 모두 재생 중 상태로 안전 초기화
- * 5. [New] 홈 복귀(👈 버튼) 시 안전 자동 저장 선제 실행 및 메모리 격리 소멸 시퀀스 (goToThemeSelectPage)
- * 6. 마스터 볼륨 슬라이더 및 타이머/페이드아웃 통합 제어 엔진 완전 계승
+ * 3. 테마별 개별 Key 분리형 LocalStorage 자동 저장 엔진 (saveSettings)
+ * 4. 신규 테마 접속 시 볼륨 0.5, 전체 ON 기본값 초기화 로드 엔진 (loadSettings)
+ * 5. 홈 복귀(👈 버튼) 시 안전 자동 저장 및 메모리 격리 소멸 시퀀스 (goToThemeSelectPage)
+ * 6. [New] Focus Mode (개별 UI 임시 가리기 및 복원) 제어 핸들러 (hideUiSegment, restoreAllUiSegments):
+ *    - 상단 제어부, 하단 타이머부, 최상단 버튼부에 개별 ✕ 단추 바인딩 및 부드러운 소멸 구현
+ *    - 대형 멍 타겟 공간 클릭 또는 복구 힌트 단추 클릭 시 가려졌던 UI 일괄 복구 결합
+ *    - 테마 전환 및 홈 복귀 시 UI 상태 일괄 자동 복구 예외 설계 완료
+ * 7. 마스터 볼륨 슬라이더 및 타이머/페이드아웃 통합 제어 엔진 완전 계승
  */
 
 // ==========================================================================
@@ -239,7 +241,10 @@ function selectTheme(themeId) {
   // 3. LocalStorage 로드: 해당 테마에 저장되어 있는 세팅값이 있다면 강제 복구
   loadSettings();
 
-  // 4. 화면 전환 처리 (theme-select-page 숨김, mixer-page 노출)
+  // 4. [New] 테마를 변경하여 신규 진입할 때는 가려진 모든 UI를 깨끗하게 원상복구하여 노출
+  restoreAllUiSegments();
+
+  // 5. 화면 전환 처리 (theme-select-page 숨김, mixer-page 노출)
   const themePage = document.getElementById('theme-select-page');
   const mixerPage = document.getElementById('mixer-page');
   
@@ -248,29 +253,32 @@ function selectTheme(themeId) {
 }
 
 /**
- * [Step 10 추가] 메인 믹서 화면에서 좌측 상단 '👈 테마 선택으로' 버튼 클릭 시 
+ * 메인 믹서 화면에서 좌측 상단 '👈 테마 선택으로' 버튼 클릭 시 
  * 작동 중인 모든 리소스를 안전하게 강제 자동 저장한 후 초기 테마 선택 화면으로 복귀합니다.
  */
 function goToThemeSelectPage() {
   console.log('[화면 복귀] 테마 선택 페이지로 복귀를 시작합니다.');
 
-  // 1. [중요] 유저가 복귀 버튼을 누를 때 현재 상태를 안전하게 선제적으로 자동 저장 (요구사항 2-1)
+  // 1. 유저가 복귀 버튼을 누를 때 현재 상태를 안전하게 선제적으로 자동 저장
   saveSettings();
 
   // 2. 공통 안전 리셋 엔진 호출 (오디오 소멸 및 타이머 취소)
   resetEngine();
 
-  // 3. 전역 테마 ID 리셋
+  // 3. [New] 홈으로 나갈 때는 가려졌던 메인 아레나의 개별 UI들을 원래 상태로 일괄 복구
+  restoreAllUiSegments();
+
+  // 4. 전역 테마 ID 리셋
   currentThemeId = '';
 
-  // 4. 화면 스위칭 (mixer-page 숨김, theme-select-page 노출)
+  // 5. 화면 스위칭 (mixer-page 숨김, theme-select-page 노출)
   const themePage = document.getElementById('theme-select-page');
   const mixerPage = document.getElementById('mixer-page');
   
   if (themePage) themePage.style.display = 'flex';
   if (mixerPage) mixerPage.style.display = 'none';
 
-  // 5. 설정 서랍(Drawer)이 열려있다면 자연스럽게 닫기 처리
+  // 6. 설정 서랍(Drawer)이 열려있다면 자연스럽게 닫기 처리
   toggleSettingsDrawer(false);
 }
 
@@ -337,11 +345,11 @@ function initializeAudioSources() {
 }
 
 // ==========================================================================
-// 4. LocalStorage 유저 설정 저장 및 로드 모듈 (Step 10 테마별 독립적 격리 공간 개편)
+// 4. LocalStorage 유저 설정 저장 및 로드 모듈 (테마별 독립적 격리 공간)
 // ==========================================================================
 
 /**
- * [Step 10 개편] 테마별 개별 독립 Key 기반의 LocalStorage 자동 저장 함수 (요구사항 1-1)
+ * 테마별 개별 독립 Key 기반의 LocalStorage 자동 저장 함수
  * 유저가 볼륨을 조정하거나 스위치를 건드릴 때마다, 'mute_settings_nature'와 같이 
  * 테마 ID가 접미사로 붙은 별도 키에 격리하여 영구 백업을 수행합니다.
  */
@@ -349,10 +357,8 @@ function saveSettings() {
   if (!currentThemeId) return; // 선택된 테마가 없으면 저장하지 않음
 
   try {
-    // 1. 테마별 고유 분리 키 구성
     const storageKey = `mute_settings_${currentThemeId}`;
 
-    // 2. 마스터 볼륨과 개별 볼륨, 재생 스위치 상태 구조화
     const userSettings = {
       masterVolume: masterVolume,
       sounds: asmrSounds.map((sound) => ({
@@ -362,7 +368,6 @@ function saveSettings() {
       }))
     };
 
-    // 3. 개별 격리 저장소에 직렬화 영구 백업
     localStorage.setItem(storageKey, JSON.stringify(userSettings));
     console.log(`[설정 자동 저장] '${storageKey}' 격리 키에 유저 설정이 안전하게 저장되었습니다.`);
   } catch (error) {
@@ -371,7 +376,7 @@ function saveSettings() {
 }
 
 /**
- * [Step 10 개편] 격리 키 로드 및 미경험 유저 기본값(볼륨 0.5, 모두 ON) 예외 처리 로드 함수 (요구사항 1-2)
+ * 격리 키 로드 및 미경험 유저 기본값(볼륨 0.5, 모두 ON) 예외 처리 로드 함수
  * 선택 테마 ID에 맵핑되는 'mute_settings_${currentThemeId}' 키로부터 설정을 불러와 복원합니다.
  * 저장된 데이터가 없는 신규 접속 상태라면 타 테마 데이터를 간섭하지 않고 안전하게 볼륨 0.5 + 모두 ON으로 초기화합니다.
  */
@@ -379,33 +384,27 @@ function loadSettings() {
   if (!currentThemeId) return;
 
   try {
-    // 1. 테마별 고유 분리 키 획득
     const storageKey = `mute_settings_${currentThemeId}`;
     const rawData = localStorage.getItem(storageKey);
     
-    // 2. [요구사항 1-2-2] 과거 기록이 없는 신규 사용자를 위한 기본 세팅값(볼륨 0.5, 모두 ON) 예외 처리
     if (!rawData) {
       console.log(`[신규 테마 발견] '${storageKey}' 키의 기존 기록이 없어 기본값(볼륨 0.5, 모두 ON)으로 초기화합니다.`);
       
-      // 2-1. 마스터 볼륨 1.0 초기화 및 HTML 슬라이더 매핑
       masterVolume = 1.0;
       const masterSlider = document.getElementById('master-volume');
       if (masterSlider) {
         masterSlider.value = 1.0;
       }
 
-      // 2-2. 개별 오디오들을 볼륨 0.5 및 재생 ON(isPlaying: true) 상태로 안전 강제 세팅
       asmrSounds.forEach((sound) => {
         sound.volume = 0.5;
         sound.isPlaying = true;
 
-        // 개별 볼륨 슬라이더 정중앙(0.5)으로 매핑
         const sliderElement = document.getElementById(`volume-${sound.id}`);
         if (sliderElement) {
           sliderElement.value = 0.5;
         }
 
-        // 오디오 인스턴스가 존재할 경우 실제 볼륨 크기 반영 및 안전 자동 재생 개시
         if (sound.audioInstance) {
           sound.audioInstance.volume = getCalculatedVolume(sound);
 
@@ -427,11 +426,9 @@ function loadSettings() {
       return;
     }
 
-    // 3. 기존 저장 기록이 있는 경우: 기존 백업 상태를 온전히 파싱하여 복원 실행
     const themeSettings = JSON.parse(rawData);
     console.log(`[설정 로드 성공] '${storageKey}' 키로부터 기존 설정을 발견하여 동기화합니다:`, themeSettings);
 
-    // 3-1. 마스터 볼륨 상태 복원 및 HTML 마스터 슬라이더 위치 동기화
     if (typeof themeSettings.masterVolume === 'number') {
       masterVolume = themeSettings.masterVolume;
       const masterSlider = document.getElementById('master-volume');
@@ -440,7 +437,6 @@ function loadSettings() {
       }
     }
 
-    // 3-2. 개별 오디오 설정 복원 및 HTML 엘리먼트 위치/텍스트 강제 동기화
     if (Array.isArray(themeSettings.sounds)) {
       themeSettings.sounds.forEach((savedSound) => {
         const sound = asmrSounds.find((s) => s.id === savedSound.id);
@@ -850,7 +846,71 @@ function toggleSettingsDrawer(isOpen) {
 }
 
 // ==========================================================================
-// 10. 이벤트 바인딩 및 어플리케이션 진입점
+// 10. Focus Mode (UI 개별 가리기 및 일괄 복구) 비즈니스 엔진 (요구사항 1 & 2)
+// ==========================================================================
+
+/**
+ * [Focus Mode] 유저가 개별 ✕ 단추 클릭 시 특정 컴포넌트 구획을 부드럽게 가리는 함수
+ * 
+ * @param {string} targetId - 가려야 할 DOM 엘리먼트 타겟 ID 또는 구분값
+ */
+function hideUiSegment(targetId) {
+  console.log(`[UI 가리기] '${targetId}' 영역을 화면에서 임시 가립니다.`);
+
+  // 1. 헤더 복귀/설정 버튼들 일괄 가리기 분기
+  if (targetId === 'header-buttons') {
+    const btnBack = document.getElementById('btn-theme-back');
+    const btnDrawer = document.getElementById('btn-drawer-toggle');
+    const btnHide = document.getElementById('btn-hide-header');
+
+    if (btnBack) btnBack.classList.add('ui-hidden-fade');
+    if (btnDrawer) btnDrawer.classList.add('ui-hidden-fade');
+    if (btnHide) btnHide.classList.add('ui-hidden-fade');
+  } else {
+    // 2. 일반 제어 구역(마스터 볼륨부, 타이머부)에 페이드 소실 스타일 주입
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+      targetElement.classList.add('ui-hidden-fade');
+    }
+  }
+
+  // 3. 하나라도 가려지면 중앙 멍 공간 안의 '🔄 숨겨진 UI 모두 복구' 마스터 버튼을 노출
+  const restoreBtn = document.getElementById('btn-ui-restore');
+  if (restoreBtn) {
+    restoreBtn.style.display = 'inline-block';
+  }
+}
+
+/**
+ * [Focus Mode] 가려졌던 모든 제어 컴포넌트들을 원상태로 일괄 오픈 복구시키는 함수 (요구사항 2)
+ */
+function restoreAllUiSegments() {
+  console.log('[UI 복구] 가려져 있던 모든 화면 제어부들을 원상태로 일괄 복구시킵니다.');
+
+  // 1. 볼륨 제어부 및 타이머부 복원
+  const topControls = document.getElementById('top-controls');
+  const timerSection = document.getElementById('timer-section');
+  if (topControls) topControls.classList.remove('ui-hidden-fade');
+  if (timerSection) timerSection.classList.remove('ui-hidden-fade');
+
+  // 2. 상단 버튼 및 헤더 가리기 단추 복원
+  const btnBack = document.getElementById('btn-theme-back');
+  const btnDrawer = document.getElementById('btn-drawer-toggle');
+  const btnHide = document.getElementById('btn-hide-header');
+
+  if (btnBack) btnBack.classList.remove('ui-hidden-fade');
+  if (btnDrawer) btnDrawer.classList.remove('ui-hidden-fade');
+  if (btnHide) btnHide.classList.remove('ui-hidden-fade');
+
+  // 3. 복구 마스터 힌트 단추 다시 숨김
+  const restoreBtn = document.getElementById('btn-ui-restore');
+  if (restoreBtn) {
+    restoreBtn.style.display = 'none';
+  }
+}
+
+// ==========================================================================
+// 11. 이벤트 바인딩 및 어플리케이션 진입점
 // ==========================================================================
 
 /**
@@ -942,6 +1002,33 @@ function setupEventListeners() {
   }
   if (drawerCloseBtn) {
     drawerCloseBtn.addEventListener('click', () => toggleSettingsDrawer(false));
+  }
+
+  // 6. [New] Focus Mode 개별 가리기 버튼 이벤트 연결 (요구사항 1)
+  const hideButtons = document.querySelectorAll('.btn-ui-hide');
+  hideButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // 멍 타겟 복구 이벤트와 겹쳐서 바로 복구되는 버그 원천 차단
+      const targetId = btn.getAttribute('data-target');
+      hideUiSegment(targetId);
+    });
+  });
+
+  // 7. [New] Focus Mode 복구 버튼 및 중앙 멍 공간 일괄 복구 리스너 바인딩 (요구사항 2)
+  const visualSpaceZone = document.getElementById('visual-space-zone');
+  const restoreButton = document.getElementById('btn-ui-restore');
+
+  if (visualSpaceZone) {
+    visualSpaceZone.addEventListener('click', () => {
+      restoreAllUiSegments();
+    });
+  }
+
+  if (restoreButton) {
+    restoreButton.addEventListener('click', (e) => {
+      e.stopPropagation(); // 버블링 제한
+      restoreAllUiSegments();
+    });
   }
 }
 
