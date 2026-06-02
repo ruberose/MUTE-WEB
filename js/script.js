@@ -1,25 +1,24 @@
 /**
  * ==========================================================================
- * MUTE-WEB ASMR White Noise Web Application (Step 9 - Dynamic Theme Binding & Reset)
+ * MUTE-WEB ASMR White Noise Web Application (Step 10 - Isolated Storage & AutoSave)
  * ==========================================================================
  * 
  * [역할 및 작동 방식]
- * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 9' 전체 비즈니스 엔진을 담당합니다.
- * 기존의 마스터 볼륨, 커스텀 취침 타이머, 10초 페이드아웃 및 설정 서랍 엔진을 완벽히 보존하면서,
- * 선택한 테마에 따라 믹서 페이지의 타이틀, 멍 타겟 배경명(bgName), 믹서 라벨을 실시간 동적으로 
- * 매핑 주입하는 핵심 셋업 함수(setupTheme)와, 테마 전환 및 홈 복귀 버튼 클릭 시 백그라운드 
- * 유령 소리를 완전히 소거하고 메모리에서 인스턴스를 격리 해제시키는 무결점 리셋(resetEngine) 구조를 융합했습니다.
+ * 본 자바스크립트 파일은 ASMR 백색소음 플레이어의 'Step 10' 전체 비즈니스 엔진을 담당합니다.
+ * 기존의 마스터 볼륨, 커스텀 취침 타이머, 10초 페이드아웃 및 셋업 파이프라인을 보존하면서,
+ * 각 테마(자연, 판타지, 공포)별로 완전히 분리된 독자적 LocalStorage Key(예: 'mute_settings_nature')를 
+ * 적용하여 데이터 격리성을 완벽히 확보하고, 기록이 없는 미경험 사용자에게는 개별 볼륨 0.5 및 전부 ON 상태의 
+ * 힐링 세팅을 제공하는 예외 처리를 추가했습니다. 또한, 홈 버튼 복귀 시 안전 자동 저장 순서를 엄격히 동기화했습니다.
  * 
  * 주요 기능:
  * 1. 테마별 사운드 데이터 구조화 (nature, fantasy, horror) 관리
- * 2. [New] 테마 셋업 파이프라인(setupTheme):
- *    - 선택된 테마의 메인 타이틀, 멍 공간 배경명(#current-bg-name), 이모지 및 텍스트 갱신
- *    - 설정 서랍 내부 오디오 조절 카드 슬라이더 및 라벨 실시간 렌더링
- *    - 기존 오디오 주소(src)를 선택된 테마의 오디오 URL들로 완전히 교체 및 초기화
- * 3. [New] 안전한 리셋(resetEngine) 구조 융합:
- *    - 홈 화면 복귀(👈 버튼) 또는 신규 테마 선택 시 가동 오디오 즉시 일시 정지 및 오디오 인스턴스 메모리 소멸(null)
- *    - 동작 중이던 취침 타이머 인터벌 즉시 해제 및 표시 문자열 초기화 연동
- * 4. 테마별 격리 LocalStorage 저장/복원 모듈과의 견고한 호환성 유지
+ * 2. 테마 셋업 파이프라인(setupTheme) 및 UI 렌더링 호환
+ * 3. [New] 테마별 개별 Key 분리형 LocalStorage 자동 저장 엔진 (saveSettings):
+ *    - 'mute_settings_nature', 'mute_settings_fantasy', 'mute_settings_horror' 키에 매핑 저장
+ * 4. [New] 신규 테마 접속 시 볼륨 0.5, 전체 ON 기본값 초기화 로드 엔진 (loadSettings):
+ *    - 기존 기록 유실 시 다른 테마 간섭을 차단하고 볼륨 0.5 + 모두 재생 중 상태로 안전 초기화
+ * 5. [New] 홈 복귀(👈 버튼) 시 안전 자동 저장 선제 실행 및 메모리 격리 소멸 시퀀스 (goToThemeSelectPage)
+ * 6. 마스터 볼륨 슬라이더 및 타이머/페이드아웃 통합 제어 엔진 완전 계승
  */
 
 // ==========================================================================
@@ -136,9 +135,6 @@ let asmrSounds = []; // 선택한 테마에 의해 동적으로 구성 및 채�
 // 유저가 선택한 테마 ID를 저장하는 전역 변수
 let currentThemeId = ''; 
 
-// 신 버전 로컬스토리지 키 설정 (기존 키와 데이터 포맷 충돌 방지)
-const STORAGE_KEY = 'mute_web_theme_settings_v3';
-
 // 마스터 볼륨 및 타이머 제어용 전역 변수
 let masterVolume = 1.0; // 마스터 볼륨 기본값
 let timerSecondsRemaining = 0; // 남은 전체 초
@@ -146,12 +142,12 @@ let countdownIntervalId = null; // 카운트다운 타이머 인터벌 ID
 let isFadingOut = false; // 현재 페이드아웃 감쇄 동작이 가동 중인지 여부
 
 // ==========================================================================
-// 2. 화면 전환 및 동적 DOM 렌더링 모듈 (Step 9 테마 세팅 및 리셋 융합)
+// 2. 화면 전환 및 동적 DOM 렌더링 모듈
 // ==========================================================================
 
 /**
- * [Step 9] 선택된 테마 정보를 바탕으로 오디오 URL 주소를 갈아끼우고 
- * 멍 타겟 명칭 및 믹서 라벨을 실시간 동적 매핑하는 핵심 셋업 함수 (요구사항 2-1)
+ * 선택된 테마 정보를 바탕으로 오디오 URL 주소를 갈아끼우고 
+ * 멍 타겟 명칭 및 믹서 라벨을 실시간 동적 매핑하는 핵심 셋업 함수
  * 
  * @param {string} themeId - 셋업할 테마 ID
  */
@@ -162,7 +158,7 @@ function setupTheme(themeId) {
   currentThemeId = themeId;
   console.log(`[테마 셋업] 선택된 테마: ${themeId}에 따라 믹서 환경을 동적 빌드합니다.`);
 
-  // 1. 오디오 데이터 매핑 (기존 오디오 주소를 새 테마 URL로 완전히 교체 및 초기화 - 요구사항 2-1-3)
+  // 1. 오디오 데이터 매핑 (기존 오디오 주소를 새 테마 URL로 완전히 교체 및 초기화)
   asmrSounds = themeInfo.sounds.map(sound => ({
     id: sound.id,
     name: sound.name,
@@ -173,7 +169,7 @@ function setupTheme(themeId) {
     isPlaying: false
   }));
 
-  // 2. 메인 화면 멍 타겟 이름 및 이모지/텍스트 갱신 (요구사항 1-1 & 2-1-2)
+  // 2. 메인 화면 멍 타겟 이름 및 이모지/텍스트 갱신
   const appTitle = document.getElementById('app-title');
   const currentBgName = document.getElementById('current-bg-name');
   const visualEmoji = document.getElementById('theme-visual-emoji');
@@ -190,7 +186,7 @@ function setupTheme(themeId) {
     drawerHeading.textContent = `⚙️ ${themeInfo.title} 테마 상세 믹서`;
   }
 
-  // 4. 설정 서랍 내부 오디오 조절 UI 및 라벨 텍스트 동적 생성 주입 (요구사항 2-1-2)
+  // 4. 설정 서랍 내부 오디오 조절 UI 및 라벨 텍스트 동적 생성 주입
   renderAudioControls();
 
   // 5. 교체된 URL 기반 신규 오디오 인스턴스 생성 및 스트리밍 개시
@@ -201,7 +197,7 @@ function setupTheme(themeId) {
 }
 
 /**
- * [Step 9] 가동 중인 오디오 엔진 및 취침 예약 타이머를 안전하고 깨끗하게 정지시키는 공통 리셋 모듈 (요구사항 2-2)
+ * 가동 중인 오디오 엔진 및 취침 예약 타이머를 안전하고 깨끗하게 정지시키는 공통 리셋 모듈
  * 테마를 바꾸거나 홈 화면으로 복귀할 때 중복 백그라운드 오디오 및 유령 소리를 원천 소거합니다.
  */
 function resetEngine() {
@@ -213,7 +209,7 @@ function resetEngine() {
   // 2. 가동 중인 카운트다운 타이머 인터벌 취소 및 UI 표시 리셋
   handleCancelTimer();
 
-  // 3. 기존 오디오 인스턴스를 명시적으로 일시정지 및 완전 해제 (유령 오디오 방지 - 요구사항 2-2-1)
+  // 3. 기존 오디오 인스턴스를 명시적으로 일시정지 및 완전 해제 (유령 오디오 방지)
   asmrSounds.forEach((sound) => {
     if (sound.audioInstance) {
       sound.audioInstance.pause();
@@ -234,10 +230,10 @@ function selectTheme(themeId) {
     return;
   }
 
-  // 1. 기존에 돌던 테마가 있다면 안전하고 깨끗하게 소거 (요구사항 2-2)
+  // 1. 기존에 돌던 테마가 있다면 안전하고 깨끗하게 소거
   resetEngine();
 
-  // 2. 새로운 테마 UI 및 오디오 셋업 파이프라인 가동 (요구사항 2-1)
+  // 2. 새로운 테마 UI 및 오디오 셋업 파이프라인 가동
   setupTheme(themeId);
 
   // 3. LocalStorage 로드: 해당 테마에 저장되어 있는 세팅값이 있다면 강제 복구
@@ -252,26 +248,29 @@ function selectTheme(themeId) {
 }
 
 /**
- * 메인 믹서 화면에서 좌측 상단 '👈 테마 선택으로' 버튼 클릭 시 
- * 작동 중인 모든 리소스를 리셋하고 초기 테마 선택 화면으로 복귀합니다.
+ * [Step 10 추가] 메인 믹서 화면에서 좌측 상단 '👈 테마 선택으로' 버튼 클릭 시 
+ * 작동 중인 모든 리소스를 안전하게 강제 자동 저장한 후 초기 테마 선택 화면으로 복귀합니다.
  */
 function goToThemeSelectPage() {
-  console.log('[화면 복귀] 테마 선택 페이지로 복귀합니다.');
+  console.log('[화면 복귀] 테마 선택 페이지로 복귀를 시작합니다.');
 
-  // 1. 공통 안전 리셋 엔진 호출 (오디오 소멸 및 타이머 취소 - 요구사항 2-2)
+  // 1. [중요] 유저가 복귀 버튼을 누를 때 현재 상태를 안전하게 선제적으로 자동 저장 (요구사항 2-1)
+  saveSettings();
+
+  // 2. 공통 안전 리셋 엔진 호출 (오디오 소멸 및 타이머 취소)
   resetEngine();
 
-  // 2. 전역 테마 ID 리셋
+  // 3. 전역 테마 ID 리셋
   currentThemeId = '';
 
-  // 3. 화면 스위칭 (mixer-page 숨김, theme-select-page 노출)
+  // 4. 화면 스위칭 (mixer-page 숨김, theme-select-page 노출)
   const themePage = document.getElementById('theme-select-page');
   const mixerPage = document.getElementById('mixer-page');
   
   if (themePage) themePage.style.display = 'flex';
   if (mixerPage) mixerPage.style.display = 'none';
 
-  // 4. 설정 서랍(Drawer)이 열려있다면 자연스럽게 닫기 처리
+  // 5. 설정 서랍(Drawer)이 열려있다면 자연스럽게 닫기 처리
   toggleSettingsDrawer(false);
 }
 
@@ -338,35 +337,23 @@ function initializeAudioSources() {
 }
 
 // ==========================================================================
-// 4. LocalStorage 유저 설정 저장 및 로드 모듈 (테마별 데이터 격리화)
+// 4. LocalStorage 유저 설정 저장 및 로드 모듈 (Step 10 테마별 독립적 격리 공간 개편)
 // ==========================================================================
 
 /**
- * [LocalStorage 설정 자동 저장 함수]
- * 유저가 볼륨을 조정하거나 스위치를 건드릴 때마다, 
- * 현재 선택된 테마 ID와 테마별 개별 세팅(마스터 볼륨, 사운드 볼륨, ON/OFF 스위치 상태)을 
- * LocalStorage에 직렬화하여 영구 백업합니다.
+ * [Step 10 개편] 테마별 개별 독립 Key 기반의 LocalStorage 자동 저장 함수 (요구사항 1-1)
+ * 유저가 볼륨을 조정하거나 스위치를 건드릴 때마다, 'mute_settings_nature'와 같이 
+ * 테마 ID가 접미사로 붙은 별도 키에 격리하여 영구 백업을 수행합니다.
  */
 function saveSettings() {
   if (!currentThemeId) return; // 선택된 테마가 없으면 저장하지 않음
 
   try {
-    const rawData = localStorage.getItem(STORAGE_KEY);
-    let fullSettings = {
-      lastThemeId: currentThemeId,
-      themes: {}
-    };
+    // 1. 테마별 고유 분리 키 구성
+    const storageKey = `mute_settings_${currentThemeId}`;
 
-    if (rawData) {
-      try {
-        fullSettings = JSON.parse(rawData);
-      } catch (e) {
-        console.warn('[경고] LocalStorage 파싱 오류로 설정 뼈대를 새로 리셋하여 백업합니다.');
-      }
-    }
-
-    fullSettings.lastThemeId = currentThemeId;
-    fullSettings.themes[currentThemeId] = {
+    // 2. 마스터 볼륨과 개별 볼륨, 재생 스위치 상태 구조화
+    const userSettings = {
       masterVolume: masterVolume,
       sounds: asmrSounds.map((sound) => ({
         id: sound.id,
@@ -375,40 +362,76 @@ function saveSettings() {
       }))
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fullSettings));
-    console.log(`[설정 자동 저장] '${currentThemeId}' 테마의 세팅 상태가 로컬 스토리지에 백업되었습니다.`);
+    // 3. 개별 격리 저장소에 직렬화 영구 백업
+    localStorage.setItem(storageKey, JSON.stringify(userSettings));
+    console.log(`[설정 자동 저장] '${storageKey}' 격리 키에 유저 설정이 안전하게 저장되었습니다.`);
   } catch (error) {
-    console.error('[설정 저장 실패] LocalStorage에 접근할 수 없습니다:', error);
+    console.error('[설정 저장 실패] LocalStorage 접근 에러:', error);
   }
 }
 
 /**
- * [LocalStorage 설정 자동 로드 및 상태 복원 함수]
- * 테마를 선택했을 때 로컬 저장소에 백업해 두었던 해당 테마의 유저 설정 데이터를 불러옵니다.
- * 데이터가 존재하면 마스터 볼륨 및 개별 슬라이더 위치, 스위치 상태 등을 실시간으로 동기화합니다.
+ * [Step 10 개편] 격리 키 로드 및 미경험 유저 기본값(볼륨 0.5, 모두 ON) 예외 처리 로드 함수 (요구사항 1-2)
+ * 선택 테마 ID에 맵핑되는 'mute_settings_${currentThemeId}' 키로부터 설정을 불러와 복원합니다.
+ * 저장된 데이터가 없는 신규 접속 상태라면 타 테마 데이터를 간섭하지 않고 안전하게 볼륨 0.5 + 모두 ON으로 초기화합니다.
  */
 function loadSettings() {
   if (!currentThemeId) return;
 
   try {
-    const rawData = localStorage.getItem(STORAGE_KEY);
+    // 1. 테마별 고유 분리 키 획득
+    const storageKey = `mute_settings_${currentThemeId}`;
+    const rawData = localStorage.getItem(storageKey);
     
+    // 2. [요구사항 1-2-2] 과거 기록이 없는 신규 사용자를 위한 기본 세팅값(볼륨 0.5, 모두 ON) 예외 처리
     if (!rawData) {
-      console.log(`[설정 로드] '${currentThemeId}' 테마의 이전 설정 데이터가 존재하지 않아 기본값으로 작동합니다.`);
+      console.log(`[신규 테마 발견] '${storageKey}' 키의 기존 기록이 없어 기본값(볼륨 0.5, 모두 ON)으로 초기화합니다.`);
+      
+      // 2-1. 마스터 볼륨 1.0 초기화 및 HTML 슬라이더 매핑
+      masterVolume = 1.0;
+      const masterSlider = document.getElementById('master-volume');
+      if (masterSlider) {
+        masterSlider.value = 1.0;
+      }
+
+      // 2-2. 개별 오디오들을 볼륨 0.5 및 재생 ON(isPlaying: true) 상태로 안전 강제 세팅
+      asmrSounds.forEach((sound) => {
+        sound.volume = 0.5;
+        sound.isPlaying = true;
+
+        // 개별 볼륨 슬라이더 정중앙(0.5)으로 매핑
+        const sliderElement = document.getElementById(`volume-${sound.id}`);
+        if (sliderElement) {
+          sliderElement.value = 0.5;
+        }
+
+        // 오디오 인스턴스가 존재할 경우 실제 볼륨 크기 반영 및 안전 자동 재생 개시
+        if (sound.audioInstance) {
+          sound.audioInstance.volume = getCalculatedVolume(sound);
+
+          sound.audioInstance.play()
+            .then(() => {
+              sound.status = '재생 중';
+              renderStatus();
+            })
+            .catch((autoplayError) => {
+              console.warn(`[자동재생 안전 차단] 브라우저 정책으로 '${sound.name}' 재생이 대기 상태입니다. (유저 상호작용 필요)`);
+              sound.status = '준비 완료'; 
+              renderStatus();
+            });
+        }
+      });
+
+      renderStatus();
+      console.log(`[신규 초기화 완료] '${currentThemeId}' 테마의 믹서 인테리어가 볼륨 0.5, 전체 재생 ON 상태로 박제되었습니다.`);
       return;
     }
 
-    const fullSettings = JSON.parse(rawData);
-    const themeSettings = fullSettings.themes && fullSettings.themes[currentThemeId];
-    
-    if (!themeSettings) {
-      console.log(`[설정 로드] '${currentThemeId}' 테마의 기존 저장 기록이 없습니다.`);
-      return;
-    }
+    // 3. 기존 저장 기록이 있는 경우: 기존 백업 상태를 온전히 파싱하여 복원 실행
+    const themeSettings = JSON.parse(rawData);
+    console.log(`[설정 로드 성공] '${storageKey}' 키로부터 기존 설정을 발견하여 동기화합니다:`, themeSettings);
 
-    console.log(`[설정 로드 성공] '${currentThemeId}' 테마 세팅을 발견하여 복원을 시작합니다:`, themeSettings);
-
-    // 1. 마스터 볼륨 상태 복원 및 HTML 마스터 슬라이더 위치 동기화
+    // 3-1. 마스터 볼륨 상태 복원 및 HTML 마스터 슬라이더 위치 동기화
     if (typeof themeSettings.masterVolume === 'number') {
       masterVolume = themeSettings.masterVolume;
       const masterSlider = document.getElementById('master-volume');
@@ -417,7 +440,7 @@ function loadSettings() {
       }
     }
 
-    // 2. 개별 오디오 설정 복원 및 HTML 엘리먼트 위치/텍스트 강제 동기화
+    // 3-2. 개별 오디오 설정 복원 및 HTML 엘리먼트 위치/텍스트 강제 동기화
     if (Array.isArray(themeSettings.sounds)) {
       themeSettings.sounds.forEach((savedSound) => {
         const sound = asmrSounds.find((s) => s.id === savedSound.id);
@@ -454,7 +477,7 @@ function loadSettings() {
     }
 
     renderStatus();
-    console.log(`[설정 복원 완료] '${currentThemeId}' 테마의 모든 슬라이더 및 스위치 복구가 성공적으로 끝났습니다.`);
+    console.log(`[설정 복원 완료] '${currentThemeId}' 테마의 이전 믹서 세팅이 완벽히 동기화 복구되었습니다.`);
   } catch (error) {
     console.error('[설정 로드 실패] 데이터를 읽어오는 중 에러가 발생하여 기본값으로 구동합니다:', error);
   }
@@ -525,7 +548,7 @@ function renderStatus() {
 }
 
 // ==========================================================================
-// 7. 오디오 제어 핵심 함수 (Step 9 다이내믹 소스 바인딩 호환성 확증)
+// 7. 오디오 제어 핵심 함수
 // ==========================================================================
 
 /**
