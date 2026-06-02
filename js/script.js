@@ -53,9 +53,9 @@ const themeData = {
     // [Fallback] 로컬 파일이 아직 복사되지 않은 신규 접속 장소에서도 눈으로 확인할 수 있는 Pexels 고화질 direct CDN 불멍 비디오
     fallbackVideoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fire-in-a-fireplace-in-close-up-40348-large.mp4",
     sounds: [
-      { id: 'rain', name: '🌧️ Pebble Rain', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/rain.mp3' },
-      { id: 'campfire', name: '🔥 Birch Fire', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/campfire.mp3' },
-      { id: 'stream', name: '🏞️ Fresh Stream', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/river.mp3' }
+      { id: 'rain', name: '🌧️ 자갈 빗소리', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/rain.mp3' },
+      { id: 'campfire', name: '🔥 자작나무 모닥불', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/campfire.mp3' },
+      { id: 'stream', name: '🏞️ 숲속 시냇물', url: 'https://raw.githubusercontent.com/karthiknvd/noctune/master/sounds/river.mp3' }
     ]
   },
   fantasy: {
@@ -66,9 +66,9 @@ const themeData = {
     videoUrl: "video/fantasy.mp4",
     fallbackVideoUrl: "https://assets.mixkit.co/videos/preview/mixkit-slow-motion-of-light-particles-loop-39909-large.mp4",
     sounds: [
-      { id: 'fantasy_melody', name: '✨ Star Choir', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-      { id: 'clock', name: '🕰️ Glass Chimes', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
-      { id: 'potion', name: '🧪 Mana Bubbler', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' }
+      { id: 'fantasy_melody', name: '✨ 은하수 성가대', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+      { id: 'clock', name: '🕰️ 유리 풍경 소리', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+      { id: 'potion', name: '🧪 마법 물약 보글보글', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' }
     ]
   },
   horror: {
@@ -79,9 +79,9 @@ const themeData = {
     videoUrl: "video/horror.mp4",
     fallbackVideoUrl: "https://assets.mixkit.co/videos/preview/mixkit-dense-mist-in-a-forest-41618-large.mp4",
     sounds: [
-      { id: 'spooky_wind', name: '💨 Mist Gale', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
-      { id: 'creaky_door', name: '🚪 Timber Creak', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' },
-      { id: 'footstep', name: '👣 Heartbeat', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3' }
+      { id: 'spooky_wind', name: '💨 안개 낀 강풍', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
+      { id: 'creaky_door', name: '🚪 문 삐걱임', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' },
+      { id: 'footstep', name: '👣 무거운 발소리', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3' }
     ]
   }
 };
@@ -128,7 +128,7 @@ function setupTheme(themeId) {
   if (appTitle) appTitle.textContent = `MUTE [${themeInfo.title}]`;
   if (currentBgName) currentBgName.textContent = themeInfo.bgName;
   if (visualText) visualText.textContent = themeInfo.visualText;
-  if (drawerHeading) drawerHeading.textContent = `${themeInfo.title} LAYERS`;
+  if (drawerHeading) drawerHeading.textContent = `${themeInfo.title} 소리 조절`;
 
   renderAudioControls();
   initializeAudioSources();
@@ -278,7 +278,7 @@ function renderAudioControls() {
       <span class="sound-label" id="label-${sound.id}">${sound.name}</span>
       <div class="audio-control-row">
         <input type="range" class="volume-slider" id="volume-${sound.id}" min="0" max="1" step="0.01" value="${sound.volume}">
-        <button type="button" class="btn-toggle-switch" id="btn-switch-${sound.id}">OFF</button>
+        <button type="button" class="btn-toggle-switch" id="btn-switch-${sound.id}">꺼짐</button>
         <span class="sound-status" id="status-${sound.id}" data-status="${sound.status}">${sound.status}</span>
       </div>
     `;
@@ -417,12 +417,12 @@ function renderStatus() {
   asmrSounds.forEach((sound) => {
     const labelElement = document.getElementById(`status-${sound.id}`);
     if (labelElement) {
-      labelElement.textContent = sound.status === '재생 중' ? 'RUNNING' : sound.status;
+      labelElement.textContent = sound.status;
       labelElement.setAttribute('data-status', sound.status);
     }
     const switchBtn = document.getElementById('btn-switch-' + sound.id);
     if (switchBtn) {
-      switchBtn.textContent = sound.isPlaying ? 'ON' : 'OFF';
+      switchBtn.textContent = sound.isPlaying ? '켜짐' : '꺼짐';
       if (sound.isPlaying) switchBtn.classList.add('active-on');
       else switchBtn.classList.remove('active-on');
     }
@@ -516,7 +516,7 @@ function startAudioTimer(minutes) {
     if (timerSecondsRemaining <= 0) {
       clearAllIntervals(); stopAllSounds();
       setTimerControlsDisabled(false);
-      updateTimerDisplay('LIMIT');
+      updateTimerDisplay('시간 종료');
     }
   }, 1000);
 }
@@ -526,7 +526,7 @@ function handleCancelTimer() {
   setTimerControlsDisabled(false);
   const timerInput = document.getElementById('timer-input');
   if (timerInput) timerInput.value = '';
-  updateTimerDisplay('OFF');
+  updateTimerDisplay('대기');
 }
 
 function setTimerControlsDisabled(disabled) {
@@ -549,7 +549,7 @@ function formatTime(totalSeconds) {
 
 function updateTimerDisplay(text) {
   const displayElement = document.getElementById('timer-display');
-  if (displayElement) displayElement.textContent = `TIME REMAINING: ${text}`;
+  if (displayElement) displayElement.textContent = `남은 시간: ${text}`;
 }
 
 function toggleSettingsDrawer(isOpen) {

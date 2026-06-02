@@ -13,8 +13,8 @@
 
 * {
   margin: 0; padding: 0; box-sizing: border-box;
-  font-family: 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
-  letter-spacing: -0.02em;
+  font-family: 'Pretendard', 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+  letter-spacing: -0.03em;
 }
 
 body {
@@ -23,6 +23,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 정교한 아날로그 미세 노이즈 텍스처 오버레이 */

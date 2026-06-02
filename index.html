@@ -24,6 +24,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&family=Noto+Sans+KR:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <!-- [디테일 패키지 5] 한글 렌더링 미학의 최고봉 Pretendard 서체 융합 -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -83,23 +85,23 @@
     <main class="main-arena" id="main-arena">
       
       <!-- [Focus Mode] 최상단 이동/설정 버튼 가리기 단추 -->
-      <button type="button" class="btn-ui-hide" id="btn-hide-header" data-target="header-buttons" title="최상단 버튼 가리기">✕ BUTTON HIDE</button>
+      <button type="button" class="btn-ui-hide" id="btn-hide-header" data-target="header-buttons" title="최상단 버튼 가리기">✕ 버튼 숨기기</button>
 
       <!-- 좌측 상단 복귀 단추 -->
       <button type="button" class="btn-theme-back" id="btn-theme-back">
         <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        THEME SELECT
+        테마 선택
       </button>
 
       <!-- 우측 상단 공유 단추 -->
       <button type="button" class="btn-share-mixer" id="btn-share-mixer" title="웹사이트 공유">
-        SHARE
+        공유
         <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l5.292-3.176m0 8.868l-5.292-3.176M21 12a3 3 0 11-6 0 3 3 0 016 0zm-12 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       </button>
 
       <!-- 우측 상단 설정 서랍 개폐 단추 -->
       <button type="button" class="btn-settings-toggle" id="btn-drawer-toggle">
-        MIXER SETTING
+        믹서 설정
         <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
       </button>
 
@@ -110,7 +112,7 @@
 
       <!-- 상단 제어 및 마스터 볼륨 영역 -->
       <section class="top-controls-wrapper" id="top-controls">
-        <button type="button" class="btn-ui-hide" data-target="top-controls" title="볼륨 조절 영역 숨기기">✕ HIDE ZONE</button>
+        <button type="button" class="btn-ui-hide" data-target="top-controls" title="볼륨 조절 영역 숨기기">✕ 영역 숨기기</button>
 
         <div class="controls-container" id="player-controls">
           <button type="button" id="btn-play-all">전체 재생</button>
@@ -118,7 +120,7 @@
         </div>
 
         <div class="master-volume-container" id="master-volume-box">
-          <label for="master-volume" class="master-volume-label" id="master-volume-label">MASTER DENSITY</label>
+          <label for="master-volume" class="master-volume-label" id="master-volume-label">마스터 볼륨</label>
           <div class="master-slider-row">
             <input type="range" class="master-volume-slider" id="master-volume" min="0" max="1" step="0.01" value="1" aria-label="전체 마스터 볼륨 조절">
           </div>
@@ -136,32 +138,32 @@
         <div class="welcome-overlay" id="welcome-overlay">
           <div class="welcome-overlay-content">
             <span class="welcome-icon">🎧</span>
-            <span class="welcome-title">TAP TO EMBRACE SILENCE</span>
+            <span class="welcome-title">터치하여 고요함 시작하기</span>
             <span class="welcome-subtitle">화면을 가볍게 터치하면 고요한 ASMR 세계가 펼쳐집니다.</span>
           </div>
         </div>
 
         <div class="mung-text-overlay">
           <span id="theme-visual-emoji" style="display:none;">🌊</span> <!-- 로직 호환성 유지용 숨김 -->
-          <span class="mung-sub-title">AMBIENT FLOW</span>
+          <span class="mung-sub-title">공간의 흐름</span>
           <h2 id="current-bg-name">NATURE ROOM</h2>
           <span id="theme-visual-text" class="mung-description">마음의 평화를 위한 대형 비주얼 멍 타겟 공간</span>
 
           <!-- 마스터 복구 버튼 -->
-          <button type="button" class="btn-ui-restore" id="btn-ui-restore" style="display: none;">🔄 RESTORE INTERACTIVE UI</button>
+          <button type="button" class="btn-ui-restore" id="btn-ui-restore" style="display: none;">🔄 숨겨진 UI 전체 복구하기</button>
         </div>
       </section>
 
       <!-- 오디오 페이드아웃 타이머 제어판 -->
       <section class="timer-container" id="timer-section">
-        <button type="button" class="btn-ui-hide" data-target="timer-section" title="타이머 영역 숨기기">✕ HIDE ZONE</button>
+        <button type="button" class="btn-ui-hide" data-target="timer-section" title="타이머 영역 숨기기">✕ 영역 숨기기</button>
 
-        <h3 class="timer-title" id="timer-section-title">SLEEP TIMEOUT COUNTER</h3>
+        <h3 class="timer-title" id="timer-section-title">취침 예약 타이머</h3>
         
         <div class="timer-controls-row" id="timer-inputs-container">
-          <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="MIN">
-          <button type="button" class="btn-timer-action" id="btn-timer-start">START</button>
-          <button type="button" class="btn-timer-action" id="btn-timer-cancel">CANCEL</button>
+          <input type="number" class="timer-input-field" id="timer-input" min="1" placeholder="분">
+          <button type="button" class="btn-timer-action" id="btn-timer-start">시작</button>
+          <button type="button" class="btn-timer-action" id="btn-timer-cancel">취소</button>
         </div>
 
         <div class="timer-display-label" id="timer-display">남은 시간: 없음</div>
@@ -174,7 +176,7 @@
          ========================================================================== -->
     <aside class="settings-drawer" id="settings-drawer">
       <div class="drawer-header" id="drawer-top">
-        <h2 class="drawer-title" id="drawer-heading">AMBIENT LAYERS</h2>
+        <h2 class="drawer-title" id="drawer-heading">소리 레이어 믹서</h2>
         <button type="button" class="btn-drawer-close" id="btn-drawer-close">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
@@ -189,7 +191,7 @@
       <!-- 🔒 구글 애드센스 하단 레이아웃 홀더 벨트 -->
       <div class="ad-banner-holder">
         <div class="ad-interior-box">
-          PROMOTION COMPONENT<br>이 영역에 광고 스크립트(300x250)가 안착됩니다.
+          광고 안내 영역<br>이 영역에 광고 스크립트(300x250)가 안착됩니다.
         </div>
       </div>
     </aside>
