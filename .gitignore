@@ -86,6 +86,7 @@ dist
 .webpack/
 
 # IDEs and editors
+.claude/
 .idea/
 .vscode/
 *.suo

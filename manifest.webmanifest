@@ -1,0 +1,17 @@
+{
+  "name": "MUTE — Ambient Sound Mixer",
+  "short_name": "MUTE",
+  "description": "테마별 앰비언트 사운드를 겹쳐 듣는 고요한 소리 믹서",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07070a",
+  "theme_color": "#07070a",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
