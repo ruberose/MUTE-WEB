@@ -41,8 +41,22 @@ manifest.webmanifest    홈 화면 설치 정보 (PWA)
 assets/images/          배경 이미지
 assets/icons/           앱 아이콘
 assets/sounds/          테마 사운드 (40초 루프 mp3)
-tools/                  사운드·아이콘 생성 스크립트
+tools/                  사운드·아이콘·공유 이미지·안내 페이지 생성 스크립트
+about/ themes/ guides/ privacy/   안내 페이지 (tools/build_pages.py로 생성)
+css/pages.css           안내 페이지 스타일
+sitemap.xml, robots.txt 검색엔진용 (tools/build_pages.py로 생성)
+.assetsignore           배포 시 사이트에 올리지 않을 파일 (README, tools 등)
 ```
+
+## 안내 페이지 (소개 · 테마 안내 · 가이드 · 개인정보처리방침)
+검색 유입과 광고 심사를 위한 글 페이지입니다. HTML을 직접 고치지 말고
+`tools/build_pages.py`의 `PAGES`에서 글을 고친 뒤 다시 생성하세요.
+
+```bash
+python tools/build_pages.py
+```
+
+배포 주소가 바뀌면 `tools/build_pages.py`의 `SITE_URL`과 `index.html`의 공유 미리보기·canonical 주소를 함께 바꾸세요.
 
 ## 오프라인(PWA) 참고
 - 서비스 워커는 `http://localhost`나 `https://` 주소에서만 작동합니다.

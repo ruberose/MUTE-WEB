@@ -738,6 +738,14 @@ body:has(#mixer-page[style*="flex"]) .btn-lang { display: none; } /* 믹서 화�
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* 첫 화면 하단 안내 페이지 링크 */
+.site-footer-links {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 18px;
+  margin-top: 36px; font-size: 0.72rem;
+}
+.site-footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.25s; }
+.site-footer-links a:hover { color: var(--text-primary); }
+
 .mute-toast {
   position: fixed; bottom: 40px; left: 50%;
   transform: translate(-50%, 20px);
